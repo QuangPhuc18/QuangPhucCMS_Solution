@@ -1,0 +1,61 @@
+﻿@model CMS_DATA.Entities.User
+
+@{
+    ViewData["Title"] = "Thêm Thành Viên Mới";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0 text-uppercase fw-bold"><i class="bi bi-person-plus-fill"></i> Đăng Ký Thành Viên</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Username" class="form-label fw-bold">Tên đăng nhập</label>
+                            <input asp-for="Username" class="form-control" placeholder="Ví dụ: phuc_admin" />
+                            <span asp-validation-for="Username" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label fw-bold">Họ và tên</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Nhập tên đầy đủ..." />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PasswordHash" class="form-label fw-bold">Mật khẩu</label>
+                            <input asp-for="PasswordHash" type="password" class="form-control" placeholder="********" />
+                            <span asp-validation-for="PasswordHash" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Role" class="form-label fw-bold">Quyền hạn</label>
+                            <select asp-for="Role" class="form-select">
+                                <option value="Member">Member (Thành viên)</option>
+                                <option value="Staff">Staff (Nhân viên)</option>
+                                <option value="Administrator">Administrator (Quản trị viên)</option>
+                            </select>
+                            <span asp-validation-for="Role" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success fw-bold py-2">LƯU THÀNH VIÊN</button>
+                            <a asp-action="Index" class="btn btn-light border text-secondary">Hủy bỏ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

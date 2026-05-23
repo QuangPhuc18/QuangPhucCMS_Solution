@@ -18,6 +18,6 @@ namespace CMS_DATA.Entities
         public string Name { get; set; } //Tên danh mục bài viết
         public string Description { get; set; } //Mô tả danh mục bài viết
 
-        public virtual ICollection<Post> Posts { get; set; }
+        public virtual ICollection<Post>? Posts { get; set; }
     }
 }

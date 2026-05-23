@@ -1,45 +1,73 @@
 ﻿@model IEnumerable<CMS_DATA.Entities.User>
 
+@{
+    ViewData["Title"] = "Quản lý Thành Viên";
+}
+
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="text-dark">QUẢN LÝ THÀNH VIÊN</h2>
-        <button class="btn btn-success btn-sm">+ Thêm thành viên mới</button>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold text-uppercase border-start border-4 border-primary ps-2">
+            QUẢN LÝ THÀNH VIÊN
+        </h2>
+        <a asp-action="Create" class="btn btn-success fw-bold shadow-sm">
+            + Thêm thành viên mới
+        </a>
     </div>
 
-    <table class="table table-hover shadow-sm border">
-        <thead class="table-light">
-            <tr>
-                <th>ID</th>
-                <th>Tên Đăng Nhập</th>
-                <th>Họ Và Tên</th>
-                <th>Quyền Hạn</th>
-                <th>Thao Tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model)
-            {
-                <tr>
-                    <td>@user.Id</td>
-                    <td><strong>@user.Username</strong></td>
-                    <td>@user.FullName</td>
-                    <td>
-                        @if (user.Role == "Administrator")
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width: 80px;">ID</th>
+                            <th>Tên Đăng Nhập</th>
+                            <th>Họ Và Tên</th>
+                            <th class="text-center">Quyền Hạn</th>
+                            <th class="text-center" style="width: 150px;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
                         {
-                            <span class="badge bg-danger">@user.Role</span>
+                            foreach (var user in Model)
+                            {
+                                <tr>
+                                    <td class="text-center fw-bold text-secondary">#@user.Id</td>
+                                    <td><strong>@user.Username</strong></td>
+                                    <td>@user.FullName</td>
+                                    <td class="text-center">
+                                        @if (user.Role == "Administrator")
+                                        {
+                                            <span class="badge bg-danger px-3 py-2">@user.Role</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark px-3 py-2">@user.Role</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-action="Edit" asp-route-id="@user.Id"
+                                           class="btn btn-sm btn-outline-warning">Sửa</a>
+
+                                        <a asp-action="Delete" asp-route-id="@user.Id"
+                                           class="btn btn-sm btn-outline-danger"
+                                           onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản [@user.Username] không?')">Xóa</a>
+                                    </td>
+                                </tr>
+                            }
                         }
                         else
                         {
-                            <span class="badge bg-info text-dark">@user.Role</span>
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    Chưa có thành viên nào trong hệ thống.
+                                </td>
+                            </tr>
                         }
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-warning">Sửa</button>
-                        <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
-

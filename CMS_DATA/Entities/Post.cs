@@ -22,7 +22,8 @@ namespace CMS_DATA.Entities
 
         // Khóa ngoại liên kết tới Category
         public int CategoryId { get; set; }
-        public virtual Category Category { get; set; }
+
+        public virtual Category ?Category { get; set; }
 
     }
 }

@@ -1,0 +1,84 @@
+﻿@model CMS_DATA.Entities.Product
+
+@{
+    ViewData["Title"] = "Thêm Sản Phẩm Mới";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0 text-uppercase fw-bold"><i class="bi bi-box-seam"></i> Thêm Sản Phẩm Mới</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
+
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label fw-bold">Tên sản phẩm <span class="text-danger">*</span></label>
+                                    <input asp-for="Name" class="form-control" placeholder="Nhập tên sản phẩm..." autofocus />
+                                    <span asp-validation-for="Name" class="text-danger small"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Price" class="form-label fw-bold">Giá bán (VNĐ) <span class="text-danger">*</span></label>
+                                        <input asp-for="Price" type="number" class="form-control" placeholder="150000" />
+                                        <span asp-validation-for="Price" class="text-danger small"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="StockQuantity" class="form-label fw-bold">Tồn kho <span class="text-danger">*</span></label>
+                                        <input asp-for="StockQuantity" type="number" min="0" class="form-control" placeholder="Số lượng..." />
+                                        <span asp-validation-for="StockQuantity" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label fw-bold">Mô tả chi tiết</label>
+                                    <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-5">
+                                <div class="card border mb-4">
+                                    <div class="card-header bg-light fw-bold">Phân Loại Danh Mục</div>
+                                    <div class="card-body">
+                                        <label asp-for="CategoryId" class="form-label">Chọn danh mục <span class="text-danger">*</span></label>
+                                        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId">
+                                            <option value="">-- Chọn danh mục --</option>
+                                        </select>
+                                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="card border">
+                                    <div class="card-header bg-light fw-bold">Hình Ảnh Của Sản Phẩm</div>
+                                    <div class="card-body">
+                                        <label asp-for="ImageUrl" class="form-label">Link ảnh (URL)</label>
+                                        <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="text-muted" />
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-light border px-4">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-success px-5 fw-bold">LƯU SẢN PHẨM</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

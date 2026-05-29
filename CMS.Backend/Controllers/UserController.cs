@@ -1,12 +1,4 @@
-﻿//SinhVien: Lê Quang Phúc
-//MSSV:2123110118
-//Lớp: CCQ2311D
-//Ngày : 16/05/2026 (Cập nhật 23/05/2026)
-//Mô tả : Controller Quản lý người dùng (User) đầy đủ tính năng CRUD
-
-using System.Threading.Tasks;
-using System.Linq;
-using CMS_DATA;
+﻿using CMS_DATA;
 using CMS_DATA.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,100 +9,77 @@ namespace CMS.Backend.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        // Tiêm (Inject) ApplicationDbContext vào Controller
         public UserController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // ==========================================
-        // 1. HIỂN THỊ DANH SÁCH (READ)
-        // ==========================================
+        // 1. DANH SÁCH
         public async Task<IActionResult> Index()
         {
-            // Lấy dữ liệu thật từ bảng Users trong SQL Server một cách bất đồng bộ
-            var users = await _context.Users.ToListAsync();
-            return View(users);
+            return View(await _context.Users.ToListAsync());
         }
 
-        // ==========================================
-        // 2. THÊM MỚI NGƯỜI DÙNG (CREATE)
-        // ==========================================
+        // 2. TẠO MỚI
         [HttpGet]
-        public IActionResult Create()
-        {
-            return View();
-        }
+        public IActionResult Create() => View();
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(User model)
+        public IActionResult Create(User model)
         {
-            if (ModelState.IsValid)
+            // Kiểm tra trùng Username
+            var checkExist = _context.Users.Any(u => u.Username == model.Username);
+            if (checkExist)
             {
-                // Lưu ý cho Backend thực tế: Ở đây thường phải có bước băm mật khẩu (Hash Password)
-                // trước khi lưu vào model.PasswordHash để bảo mật.
-
-                _context.Users.Add(model);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại!");
+                return View(model);
             }
-            return View(model);
+
+            _context.Users.Add(model);
+            _context.SaveChanges();
+            return RedirectToAction("Index");
         }
 
-        // ==========================================
-        // 3. CHỈNH SỬA NGƯỜI DÙNG (UPDATE)
-        // ==========================================
+        // 3. SỬA (Lưu ý logic Password)
         [HttpGet]
-        public async Task<IActionResult> Edit(int id)
+        public IActionResult Edit(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
+            var user = _context.Users.Find(id);
+            if (user == null) return NotFound();
             return View(user);
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(User model)
+        public IActionResult Edit(User model, string? NewPassword)
         {
-            if (ModelState.IsValid)
+            var existingUser = _context.Users.AsNoTracking().FirstOrDefault(u => u.Id == model.Id);
+            if (existingUser == null) return NotFound();
+
+            // Nếu người dùng gõ mật khẩu mới -> Lấy cái mới, Ngược lại giữ cái cũ
+            if (!string.IsNullOrEmpty(NewPassword))
             {
-                try
-                {
-                    _context.Users.Update(model);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserExists(model.Id)) return NotFound();
-                    else throw;
-                }
-                return RedirectToAction(nameof(Index));
+                model.PasswordHash = NewPassword;
             }
-            return View(model);
+            else
+            {
+                model.PasswordHash = existingUser.PasswordHash;
+            }
+
+            _context.Users.Update(model);
+            _context.SaveChanges();
+            return RedirectToAction("Index");
         }
 
-        // ==========================================
-        // 4. XÓA NGƯỜI DÙNG (DELETE)
-        // ==========================================
-        public async Task<IActionResult> Delete(int id)
+        // 4. XÓA
+        public IActionResult Delete(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = _context.Users.Find(id);
             if (user != null)
             {
                 _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
+                _context.SaveChanges();
             }
-            return RedirectToAction(nameof(Index));
-        }
-
-        // Hàm bổ trợ kiểm tra tồn tại
-        private bool UserExists(int id)
-        {
-            return _context.Users.Any(e => e.Id == id);
+            return RedirectToAction("Index");
         }
     }
 }

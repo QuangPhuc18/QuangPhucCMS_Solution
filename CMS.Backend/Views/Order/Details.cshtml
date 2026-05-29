@@ -1,0 +1,120 @@
+﻿@model CMS_DATA.Entities.Order
+
+@{
+    ViewData["Title"] = "Chi Tiết Hóa Đơn";
+    // Biến dùng để cộng dồn tính tổng tiền
+    decimal grandTotal = 0;
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="mb-3">
+                <a asp-action="Index" class="btn btn-light border shadow-sm">
+                    &larr; Quay lại danh sách
+                </a>
+            </div>
+
+            <div class="card shadow border-0 rounded-3">
+                <div class="card-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0 text-uppercase fw-bold"><i class="bi bi-receipt"></i> Hóa Đơn Mua Hàng</h3>
+                        <p class="mb-0 text-light mt-1">Mã đơn: <strong>#@Model.Id</strong> | Ngày đặt: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div>
+                        @if (Model.Status == 0)
+                        {
+                            <span class="badge bg-warning text-dark fs-5">Chờ duyệt</span>
+                        }
+                        else if (Model.Status == 1)
+                        {
+
+                            <span class="badge bg-info text-dark fs-5">Đang giao</span>
+                        }
+                        else if (Model.Status == 2)
+                        {
+
+                            <span class="badge bg-success fs-5">Đã xong</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="card-body p-5">
+                    <div class="row mb-5">
+                        <div class="col-sm-6">
+                            <h6 class="text-muted text-uppercase fw-bold mb-3">Thông tin người mua:</h6>
+                            @if (Model.Customer != null)
+                            {
+                                <h5 class="fw-bold mb-1">@Model.Customer.FullName</h5>
+                                <p class="mb-1"><i class="bi bi-envelope"></i> @Model.Customer.Email</p>
+                                <p class="mb-1"><i class="bi bi-telephone"></i> @Model.Customer.Phone</p>
+                                <p class="mb-0"><i class="bi bi-geo-alt"></i> @Model.Customer.Address</p>
+                            }
+                        </div>
+                        <div class="col-sm-6 text-sm-end">
+                            <h6 class="text-muted text-uppercase fw-bold mb-3">Ghi chú đơn hàng:</h6>
+                            <p class="fst-italic border p-3 bg-light rounded">
+                                @(string.IsNullOrEmpty(Model.Notes) ? "Không có ghi chú." : Model.Notes)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light text-center fw-bold">
+                                <tr>
+                                    <th style="width: 50px;">STT</th>
+                                    <th class="text-start">Tên Sản Phẩm</th>
+                                    <th style="width: 120px;">Đơn Giá</th>
+                                    <th style="width: 100px;">Số Lượng</th>
+                                    <th style="width: 150px;">Thành Tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.OrderDetails != null && Model.OrderDetails.Any())
+                                {
+                                    int stt = 1;
+                                    foreach (var detail in Model.OrderDetails)
+                                    {
+                                        // ĐÃ SỬA: detail.Price thành detail.UnitPrice
+                                        decimal lineTotal = (detail.Quantity * detail.UnitPrice);
+                                        grandTotal += lineTotal;
+
+                                        <tr>
+                                            <td class="text-center">@stt</td>
+                                            <td class="fw-bold">
+                                                @(detail.Product != null ? detail.Product.Name : "Sản phẩm không xác định")
+                                            </td>
+                                            <td class="text-end">@detail.UnitPrice.ToString("#,##0") đ</td>
+                                            <td class="text-center">@detail.Quantity</td>
+                                            <td class="text-end fw-bold text-danger">@lineTotal.ToString("#,##0") đ</td>
+                                        </tr>
+                                        stt++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">Lỗi: Không tìm thấy chi tiết sản phẩm.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row justify-content-end">
+                        <div class="col-md-5">
+                            <table class="table table-borderless table-sm fs-5">
+                                <tr class="border-top border-dark border-2">
+                                    <td class="text-end fw-bold">TỔNG CỘNG:</td>
+                                    <td class="text-end fw-bold text-danger fs-4">@grandTotal.ToString("#,##0") VNĐ</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

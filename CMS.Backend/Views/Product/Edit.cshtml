@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Cập Nhật Sản Phẩm";
+    Layout = "_LayoutAdmin";
 }
 
 <div class="container mt-5 mb-5">
@@ -12,10 +13,11 @@
                     <h5 class="mb-0 text-uppercase fw-bold"><i class="bi bi-pencil-square"></i> Cập Nhật Sản Phẩm #@Model.Id</h5>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Edit" method="post">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
 
                         <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ImageUrl" />
 
                         <div class="row">
                             <div class="col-md-7">
@@ -28,12 +30,12 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label asp-for="Price" class="form-label fw-bold">Giá bán (VNĐ) <span class="text-danger">*</span></label>
-                                        <input asp-for="Price" type="number" class="form-control" />
+                                        <input asp-for="Price" type="number" min="0" onkeypress="return event.charCode >= 48 && event.charCode <= 57" class="form-control" />
                                         <span asp-validation-for="Price" class="text-danger small"></span>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label asp-for="StockQuantity" class="form-label fw-bold">Tồn kho <span class="text-danger">*</span></label>
-                                        <input asp-for="StockQuantity" type="number" min="0" class="form-control" />
+                                        <input asp-for="StockQuantity" type="number" min="0" onkeypress="return event.charCode >= 48 && event.charCode <= 57" class="form-control" />
                                         <span asp-validation-for="StockQuantity" class="text-danger small"></span>
                                     </div>
                                 </div>
@@ -48,23 +50,24 @@
                                 <div class="card border mb-4 shadow-sm">
                                     <div class="card-header bg-light fw-bold">Phân Loại Danh Mục</div>
                                     <div class="card-body">
-                                        <label asp-for="CategoryId" class="form-label">Đổi danh mục</label>
-                                        <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId">
+                                        <label asp-for="CategoryProductId" class="form-label">Đổi danh mục</label>
+                                        <select asp-for="CategoryProductId" class="form-select" asp-items="ViewBag.CategoryList">
                                             <option value="">-- Chọn danh mục --</option>
                                         </select>
-                                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                                        <span asp-validation-for="CategoryProductId" class="text-danger small"></span>
                                     </div>
                                 </div>
 
                                 <div class="card border shadow-sm">
                                     <div class="card-header bg-light fw-bold">Hình Ảnh Hiện Tại</div>
                                     <div class="card-body">
-                                        <label asp-for="ImageUrl" class="form-label">Link ảnh mới (URL)</label>
-                                        <input asp-for="ImageUrl" class="form-control mb-3" />
+                                        <label class="form-label">Tải ảnh mới (Nếu muốn đổi)</label>
+                                        <input type="file" name="uploadImage" class="form-control mb-3" accept="image/*" />
 
                                         @if (!string.IsNullOrEmpty(Model?.ImageUrl))
                                         {
-                                            <div class="text-center">
+                                            <div class="text-center mt-2">
+                                                <p class="small text-muted mb-1">Ảnh đang dùng:</p>
                                                 <img src="@Model.ImageUrl" alt="Thumbnail" class="img-thumbnail shadow-sm" style="max-height: 150px; object-fit: cover;" />
                                             </div>
                                         }

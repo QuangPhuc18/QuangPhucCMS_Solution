@@ -6,11 +6,13 @@
 
 using CMS_DATA;
 using CMS_DATA.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Backend.Controllers
 {
+    [Authorize]
     //Ngày 23/05/2026:Update lại category
     public class CategoryController : Controller
     {

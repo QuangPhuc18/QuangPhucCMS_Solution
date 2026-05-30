@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Quản Lý Sản Phẩm";
+    Layout = "_LayoutAdmin";
 }
 
 <div class="container mt-4">
@@ -44,7 +45,7 @@
 
                                     <td>
                                         <span class="badge bg-info text-dark">
-                                            @(item.Category != null ? item.Category.Name : "Chưa phân loại")
+                                            @(item.CategoryProduct != null ? item.CategoryProduct.Name : "Chưa phân loại")
                                         </span>
                                     </td>
 

@@ -1,65 +1,242 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CMS Admin</title>
+    <title>@ViewData["Title"] - QuanLy Admin</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
     <style>
-        .sidebar {
-            min-height: 100vh;
-            background-color: #212529;
-            color: white;
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 80px;
+            --header-height: 64px;
+            --bg-light: #f8fafc;
+            --hover-bg: #f1f5f9;
+            --active-bg: #eff6ff;
+            --active-text: #2563eb;
         }
 
-            .sidebar a {
-                color: #adb5bd;
-                text-decoration: none;
-                display: block;
-                padding: 12px 20px;
-                transition: 0.3s;
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: hidden; /* Chống cuộn toàn trang, chỉ cuộn vùng nội dung */
+        }
+
+        /* --- SIDEBAR STYLES --- */
+        #sidebar {
+            width: var(--sidebar-width);
+            transition: all 0.3s ease;
+            z-index: 1040;
+        }
+
+            #sidebar.collapsed {
+                width: var(--sidebar-collapsed-width);
             }
 
-                .sidebar a:hover, .sidebar .active {
-                    background-color: #0d6efd;
-                    color: white;
-                    border-radius: 5px;
-                    margin: 0 10px;
+                #sidebar.collapsed .hide-on-collapse {
+                    display: none !important;
                 }
 
-        main {
-            background-color: #f8f9fa;
-            min-height: 100vh;
+        .sidebar-link {
+            color: #475569;
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+            .sidebar-link:hover {
+                background-color: var(--hover-bg);
+                color: #0f172a;
+            }
+
+            .sidebar-link.active {
+                background-color: var(--active-bg);
+                color: var(--active-text);
+            }
+
+        /* Menu con (Collapse) */
+        .submenu-link {
+            padding: 8px 16px 8px 48px;
+            color: #64748b;
+            text-decoration: none;
+            display: block;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+            .submenu-link:hover, .submenu-link.active {
+                background-color: var(--hover-bg);
+                color: var(--active-text);
+                font-weight: 500;
+            }
+
+        /* --- HEADER STYLES --- */
+        #main-wrapper {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-header {
+            height: var(--header-height);
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .search-box {
+            position: relative;
+            width: 350px;
+        }
+
+            .search-box input {
+                padding-left: 38px;
+                background-color: var(--bg-light);
+                border: 1px solid #e2e8f0;
+            }
+
+            .search-box .search-icon {
+                position: absolute;
+                left: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #94a3b8;
+            }
+
+        /* Gradient Logo */
+        .logo-box {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #2563eb, #9333ea);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
         }
     </style>
 </head>
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-3 col-lg-2 sidebar p-0 shadow">
-                <div class="p-3 text-center border-bottom border-secondary mb-3">
-                    <h4 class="text-white fw-bold"><i class="bi bi-shield-lock"></i> ADMIN PANEL</h4>
-                </div>
-                <div>
-                    <a asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2 me-2"></i> Bảng điều khiển</a>
-                    <a asp-controller="Category" asp-action="Index"><i class="bi bi-tags me-2"></i> Danh mục </a>
-                    <a asp-controller="Post" asp-action="Index"><i class="bi bi-file-earmark-text me-2"></i> Bài viết (Tin tức)</a>
-                    <a asp-controller="Product" asp-action="Index"><i class="bi bi-box-seam me-2"></i> Quản lý Sản phẩm</a>
-                    <a asp-controller="Customer" asp-action="Index"><i class="bi bi-person-vcard me-2"></i> Khách hàng</a>
-                    <a asp-controller="Order" asp-action="Index"><i class="bi bi-cart-check me-2"></i> Đơn hàng</a>
-                    <a asp-controller="User" asp-action="Index"><i class="bi bi-people me-2"></i> Thành viên (Admin)</a>
-                </div>
-            </nav>
+<body class="d-flex">
 
-            <main class="col-md-9 col-lg-10 ms-sm-auto p-4">
-                @RenderBody()
-            </main>
+    <aside id="sidebar" class="bg-white border-end d-flex flex-column vh-100 flex-shrink-0">
+        <div class="d-flex align-items-center px-4 border-bottom" style="height: var(--header-height);">
+            <div class="logo-box flex-shrink-0">QP</div>
+            <span class="fs-5 fw-bold ms-3 hide-on-collapse" style="color: #0f172a;">QuanLy</span>
         </div>
+
+        <nav class="flex-grow-1 overflow-y-auto p-3">
+            <p class="text-muted small fw-bold mb-2 px-3 hide-on-collapse" style="font-size: 0.75rem;">MENU</p>
+
+            <div class="d-flex flex-column gap-1">
+                <a asp-controller="Home" asp-action="Index" class="sidebar-link active">
+                    <i class="bi bi-box-seam fs-5"></i>
+                    <span class="hide-on-collapse">Dashboard</span>
+                </a>
+
+                <a href="#ecommerceMenu" data-bs-toggle="collapse" class="sidebar-link" aria-expanded="true">
+                    <i class="bi bi-cart3 fs-5"></i>
+                    <span class="hide-on-collapse flex-grow-1">E-commerce</span>
+                    <span class="badge bg-success rounded-pill hide-on-collapse" style="font-size: 0.65rem;">NEW</span>
+                    <i class="bi bi-chevron-down ms-2 hide-on-collapse" style="font-size: 0.8rem;"></i>
+                </a>
+
+                <div class="collapse show hide-on-collapse" id="ecommerceMenu">
+                    <div class="d-flex flex-column gap-1 mt-1">
+                        <a asp-controller="Category" asp-action="Index" class="submenu-link">Categories</a>
+                        <a asp-controller="Product" asp-action="Index" class="submenu-link">Product</a>
+                        <a asp-controller="Post" asp-action="Index" class="submenu-link">Post (Tin tức)</a>
+                        <a asp-controller="Order" asp-action="Index" class="submenu-link">Order</a>
+                        <a asp-controller="User" asp-action="Index" class="submenu-link">User</a>
+                        <a asp-controller="Customer" asp-action="Index" class="submenu-link">Customer</a>
+                        <a asp-controller="CategoryProduct" asp-action="Index" class="submenu-link">CategoryProduct</a>
+                    </div>
+                </div>
+
+                
+                @* <a href="#" class="sidebar-link">
+                    <i class="bi bi-gear fs-5"></i>
+                    <span class="hide-on-collapse">Settings</span>
+                </a> *@
+            </div>
+        </nav>
+
+        <div class="p-3 border-top">
+            <a href="/" target="_blank" class="sidebar-link text-dark">
+                <i class="bi bi-house fs-5"></i>
+                <span class="hide-on-collapse">Back to Site</span>
+            </a>
+            <a asp-controller="Account" asp-action="Logout" class="sidebar-link text-danger mt-1" onclick="return confirm('Xác nhận đăng xuất?');">
+                <i class="bi bi-box-arrow-left fs-5"></i>
+                <span class="hide-on-collapse">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <div id="main-wrapper" class="flex-grow-1 overflow-hidden">
+
+        <header class="top-header d-flex align-items-center justify-content-between px-4">
+
+            <div class="d-flex align-items-center gap-3">
+                <button id="toggleSidebar" class="btn btn-light border-0">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+
+                <div class="search-box d-none d-md-block">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" class="form-control rounded-3" placeholder="Search or type command...">
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-light border-0 rounded-circle position-relative me-1">
+                    <i class="bi bi-moon fs-5 text-secondary"></i>
+                </button>
+                <button class="btn btn-light border-0 rounded-circle position-relative me-3">
+                    <i class="bi bi-bell fs-5 text-secondary"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                </button>
+
+                <div class="d-flex align-items-center border-start ps-3 gap-2" style="cursor: pointer;">
+                    @{
+                        // Lấy tên User đang đăng nhập, mặc định là Admin nếu null
+                        var fullName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Admin";
+                        // Tạo link avatar ngẫu nhiên từ tên
+                        var avatarUrl = $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(fullName)}&background=random";
+                    }
+                    <img src="@avatarUrl" alt="Avatar" class="rounded-circle border" style="width: 36px; height: 36px; object-fit: cover;" />
+                    <div class="d-none d-md-block">
+                        <span class="d-block fw-bold" style="font-size: 0.9rem; color: #0f172a;">@fullName</span>
+                    </div>
+                    <i class="bi bi-chevron-down text-muted" style="font-size: 0.8rem;"></i>
+                </div>
+            </div>
+
+        </header>
+
+        <main class="flex-grow-1 overflow-y-auto p-4" style="background-color: var(--bg-light);">
+            @RenderBody()
+        </main>
+
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Xử lý nút bấm Thu gọn/Mở rộng Sidebar
+        document.getElementById('toggleSidebar').addEventListener('click', function () {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

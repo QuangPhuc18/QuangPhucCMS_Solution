@@ -1,10 +1,13 @@
 ﻿using CMS_DATA;
 using CMS_DATA.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Backend.Controllers
 {
+    //[Authorize]
+    //[Authorize(Roles = "Administrator")]
     public class UserController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -27,16 +30,19 @@ namespace CMS.Backend.Controllers
         [HttpPost]
         public IActionResult Create(User model)
         {
-            // Kiểm tra trùng Username
             var checkExist = _context.Users.Any(u => u.Username == model.Username);
             if (checkExist)
             {
-                ModelState.AddModelError("Username", "Tên đăng nhập này đã tồn tại!");
+                ModelState.AddModelError("Username", "Tên đăng nhập này đã có người dùng!");
                 return View(model);
             }
 
+            // 🔥 THÊM DÒNG NÀY: Băm mật khẩu người dùng vừa nhập
+            model.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.PasswordHash);
+
             _context.Users.Add(model);
             _context.SaveChanges();
+
             return RedirectToAction("Index");
         }
 
@@ -55,13 +61,14 @@ namespace CMS.Backend.Controllers
             var existingUser = _context.Users.AsNoTracking().FirstOrDefault(u => u.Id == model.Id);
             if (existingUser == null) return NotFound();
 
-            // Nếu người dùng gõ mật khẩu mới -> Lấy cái mới, Ngược lại giữ cái cũ
             if (!string.IsNullOrEmpty(NewPassword))
             {
-                model.PasswordHash = NewPassword;
+                // 🔥 THÊM DÒNG NÀY: Nếu họ nhập mật khẩu mới -> Băm mật khẩu mới
+                model.PasswordHash = BCrypt.Net.BCrypt.HashPassword(NewPassword);
             }
             else
             {
+                // Nếu để trống -> Giữ nguyên chuỗi mã hóa cũ
                 model.PasswordHash = existingUser.PasswordHash;
             }
 
@@ -69,7 +76,6 @@ namespace CMS.Backend.Controllers
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
-
         // 4. XÓA
         public IActionResult Delete(int id)
         {

@@ -3,16 +3,18 @@
 //Lớp: CCQ2311D
 //Mô tả : Controller Quản lý Đơn hàng (Order) và Chi tiết đơn hàng
 
-using System.Threading.Tasks;
-using System.Linq;
 using CMS_DATA;
 using CMS_DATA.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CMS.Backend.Controllers
 {
+    [Authorize]
     public class OrderController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -139,7 +141,7 @@ namespace CMS.Backend.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
-
+    
         private bool OrderExists(int id)
         {
             return _context.Orders.Any(e => e.Id == id);

@@ -27,7 +27,7 @@ namespace CMS.Backend.Controllers
             var latestPosts = await _context.Posts
                 .Include(p => p.Category)                  // Lấy kèm tên danh mục
                 .OrderByDescending(p => p.CreatedDate)     // Sắp xếp ngày mới nhất lên đầu
-                .Take(3)                                   // Cắt lấy đúng 3 bài
+                .Take(8)                                   // Cắt lấy đúng 3 bài
                 .ToListAsync();                            // Tải về RAM
 
             // Truyền danh sách 3 bài viết ra View để hiển thị

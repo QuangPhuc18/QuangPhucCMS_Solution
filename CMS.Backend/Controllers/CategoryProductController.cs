@@ -3,15 +3,18 @@
 //Lớp: CCQ2311D
 //Mô tả: Controller Quản lý Danh mục Sản phẩm
 
-using System.Threading.Tasks;
-using System.Linq;
 using CMS_DATA;
 using CMS_DATA.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CMS.Backend.Controllers
 {
+    [Authorize]
+    [ApiExplorerSettings(IgnoreApi = true)] // Chặn Swagger quét file này
     public class CategoryProductController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -21,14 +24,20 @@ namespace CMS.Backend.Controllers
             _context = context;
         }
 
-        // 1. DANH SÁCH DANH MỤC
+        // ==========================================
+        // 1. DANH SÁCH DANH MỤC (INDEX)
+        // ==========================================
         public async Task<IActionResult> Index()
         {
-            // Sử dụng CategoriesProducts như bạn đã khai báo trong ApplicationDbContext
-            return View(await _context.CategoriesProducts.ToListAsync());
+            var categories = await _context.CategoriesProducts
+                .OrderByDescending(c => c.Id)
+                .ToListAsync();
+            return View(categories);
         }
 
-        // 2. THÊM MỚI
+        // ==========================================
+        // 2. THÊM DANH MỤC (CREATE)
+        // ==========================================
         [HttpGet]
         public IActionResult Create()
         {
@@ -39,9 +48,6 @@ namespace CMS.Backend.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CategoryProduct model)
         {
-            // Bỏ qua kiểm tra danh sách sản phẩm liên kết
-            ModelState.Remove("Products");
-
             if (ModelState.IsValid)
             {
                 _context.CategoriesProducts.Add(model);
@@ -51,7 +57,9 @@ namespace CMS.Backend.Controllers
             return View(model);
         }
 
-        // 3. CHỈNH SỬA
+        // ==========================================
+        // 3. SỬA DANH MỤC (EDIT)
+        // ==========================================
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -65,25 +73,38 @@ namespace CMS.Backend.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(CategoryProduct model)
+        public async Task<IActionResult> Edit(int id, CategoryProduct model)
         {
-            ModelState.Remove("Products");
+            if (id != model.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
-                _context.CategoriesProducts.Update(model);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    _context.CategoriesProducts.Update(model);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.CategoriesProducts.Any(e => e.Id == id)) return NotFound();
+                    else throw;
+                }
             }
             return View(model);
         }
 
-        // 4. XÓA
+        // ==========================================
+        // 4. XÓA DANH MỤC (DELETE)
+        // ==========================================
+        // Xóa trực tiếp bằng 1 nút bấm trên màn hình Index, không cần trang View riêng
         public async Task<IActionResult> Delete(int id)
         {
             var category = await _context.CategoriesProducts.FindAsync(id);
             if (category != null)
             {
+                // Lưu ý: Nếu danh mục này đang có sản phẩm, SQL có thể báo lỗi khóa ngoại.
+                // Ở mức độ cơ bản, chúng ta cứ thực hiện xóa.
                 _context.CategoriesProducts.Remove(category);
                 await _context.SaveChangesAsync();
             }

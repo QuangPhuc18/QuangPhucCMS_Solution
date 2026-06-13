@@ -22,6 +22,26 @@ namespace CMS_DATA.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("CMS_DATA.Entities.Brand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Brands");
+                });
+
             modelBuilder.Entity("CMS_DATA.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -192,6 +212,9 @@ namespace CMS_DATA.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("BrandId")
+                        .HasColumnType("int");
+
                     b.Property<int>("CategoryProductId")
                         .HasColumnType("int");
 
@@ -212,6 +235,8 @@ namespace CMS_DATA.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BrandId");
 
                     b.HasIndex("CategoryProductId");
 
@@ -290,13 +315,26 @@ namespace CMS_DATA.Migrations
 
             modelBuilder.Entity("CMS_DATA.Entities.Product", b =>
                 {
+                    b.HasOne("CMS_DATA.Entities.Brand", "Brand")
+                        .WithMany("Products")
+                        .HasForeignKey("BrandId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("CMS_DATA.Entities.CategoryProduct", "CategoryProduct")
                         .WithMany("Products")
                         .HasForeignKey("CategoryProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Brand");
+
                     b.Navigation("CategoryProduct");
+                });
+
+            modelBuilder.Entity("CMS_DATA.Entities.Brand", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("CMS_DATA.Entities.Category", b =>

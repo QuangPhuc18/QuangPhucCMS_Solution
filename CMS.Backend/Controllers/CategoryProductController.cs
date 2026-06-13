@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace CMS.Backend.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator,Staff")]
     [ApiExplorerSettings(IgnoreApi = true)] // Chặn Swagger quét file này
     public class CategoryProductController : Controller
     {
@@ -45,6 +45,7 @@ namespace CMS.Backend.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CategoryProduct model)
         {
@@ -72,6 +73,7 @@ namespace CMS.Backend.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, CategoryProduct model)
         {
@@ -98,6 +100,8 @@ namespace CMS.Backend.Controllers
         // 4. XÓA DANH MỤC (DELETE)
         // ==========================================
         // Xóa trực tiếp bằng 1 nút bấm trên màn hình Index, không cần trang View riêng
+        
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)
         {
             var category = await _context.CategoriesProducts.FindAsync(id);

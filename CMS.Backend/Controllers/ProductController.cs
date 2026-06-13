@@ -1,7 +1,7 @@
 ﻿//SinhVien: Lê Quang Phúc
 //MSSV: 2123110118
 //Lớp: CCQ2311D
-//Mô tả: Controller quản lý Sản phẩm (Đã FIX lỗi không hiện danh mục bằng ViewBag.CategoryList)
+//Mô tả: Controller quản lý Sản phẩm - Đã liên kết đồng bộ bảng Brand vào luồng CRUD
 
 using CMS_DATA;
 using CMS_DATA.Entities;
@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace CMS.Backend.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator,Staff")]
     [ApiExplorerSettings(IgnoreApi = true)] // Chặn Swagger không quét file này để tránh lỗi trắng trang
     public class ProductController : Controller
     {
@@ -33,9 +33,10 @@ namespace CMS.Backend.Controllers
         // ==========================================
         public async Task<IActionResult> Index()
         {
-            // Đã đổi sang Include CategoryProduct
+            // 🔥 FIX: Nối thêm .Include(p => p.Brand) để hiển thị tên Thương hiệu (Sony, LG...) ra ngoài danh sách bảng
             var products = await _context.Products
                 .Include(p => p.CategoryProduct)
+                .Include(p => p.Brand)
                 .OrderByDescending(p => p.Id)
                 .ToListAsync();
             return View(products);
@@ -47,17 +48,22 @@ namespace CMS.Backend.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            // 🔥 FIX: Đổi tên thành ViewBag.CategoryList để không bị trùng tên thuộc tính
             ViewBag.CategoryList = new SelectList(_context.CategoriesProducts, "Id", "Name");
+
+            // 🔥 FIX THẦN THÁNH: Nạp dữ liệu từ bảng Brands vào ViewBag để đổ ra ô Chọn của View
+            ViewBag.BrandList = new SelectList(_context.Brands, "Id", "Name");
+
             return View();
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Product model, IFormFile? uploadImage)
         {
-            // Bỏ qua validate khóa ngoại và ảnh để tự xử lý
+            // Bỏ qua validate khóa ngoại và ảnh để tự xử lý bằng code dưới
             ModelState.Remove("CategoryProduct");
+            ModelState.Remove("Brand"); // Loại bỏ validate thực thể Brand tự động của EF Core
             ModelState.Remove("ImageUrl");
 
             if (ModelState.IsValid)
@@ -82,8 +88,9 @@ namespace CMS.Backend.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // 🔥 FIX: Đổi tên thành ViewBag.CategoryList
+            // 🔥 FIX: Nếu dính lỗi nhập liệu (Validation Fail), phải nạp lại cả 2 danh sách trước khi trả lại View
             ViewBag.CategoryList = new SelectList(_context.CategoriesProducts, "Id", "Name", model.CategoryProductId);
+            ViewBag.BrandList = new SelectList(_context.Brands, "Id", "Name", model.BrandId);
             return View(model);
         }
 
@@ -98,18 +105,23 @@ namespace CMS.Backend.Controllers
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
 
-            // 🔥 FIX: Đổi tên thành ViewBag.CategoryList
             ViewBag.CategoryList = new SelectList(_context.CategoriesProducts, "Id", "Name", product.CategoryProductId);
+
+            // 🔥 FIX: Nạp danh sách hãng và đánh dấu chọn đúng Hãng hiện tại của sản phẩm đó
+            ViewBag.BrandList = new SelectList(_context.Brands, "Id", "Name", product.BrandId);
+
             return View(product);
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Product model, IFormFile? uploadImage)
         {
             if (id != model.Id) return NotFound();
 
             ModelState.Remove("CategoryProduct");
+            ModelState.Remove("Brand");
             ModelState.Remove("ImageUrl");
 
             if (ModelState.IsValid)
@@ -124,7 +136,8 @@ namespace CMS.Backend.Controllers
                     productToUpdate.Description = model.Description;
                     productToUpdate.Price = model.Price;
                     productToUpdate.StockQuantity = model.StockQuantity;
-                    productToUpdate.CategoryProductId = model.CategoryProductId; // Cập nhật đúng khóa ngoại mới
+                    productToUpdate.CategoryProductId = model.CategoryProductId;
+                    productToUpdate.BrandId = model.BrandId; // 🔥 FIX: Cho phép lưu cập nhật Hãng sản xuất mới
 
                     // Xử lý cập nhật ảnh
                     if (uploadImage != null && uploadImage.Length > 0)
@@ -158,14 +171,16 @@ namespace CMS.Backend.Controllers
                 }
             }
 
-            // 🔥 FIX: Đổi tên thành ViewBag.CategoryList
+            // 🔥 FIX: Nạp lại dữ liệu khi lỗi
             ViewBag.CategoryList = new SelectList(_context.CategoriesProducts, "Id", "Name", model.CategoryProductId);
+            ViewBag.BrandList = new SelectList(_context.Brands, "Id", "Name", model.BrandId);
             return View(model);
         }
 
         // ==========================================
         // 4. XÓA SẢN PHẨM (DELETE)
         // ==========================================
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)
         {
             var product = await _context.Products.FindAsync(id);

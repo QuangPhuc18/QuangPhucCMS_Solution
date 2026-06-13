@@ -5,7 +5,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-
+using System.Text.Json.Serialization;
 namespace CMS_DATA.Entities
 {
     public class CategoryProduct

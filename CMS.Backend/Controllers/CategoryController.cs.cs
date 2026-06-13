@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Backend.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator,Staff")]
     //Ngày 23/05/2026:Update lại category
     public class CategoryController : Controller
     {
@@ -39,6 +39,7 @@ namespace CMS.Backend.Controllers
 
         // 2. Hàm POST: Dùng để đón dữ liệu từ Form gửi lên và lưu vào SQL
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Create(Category model)
         {
             // BƯỚC 1: Thêm dữ liệu vào bộ nhớ tạm của Entity Framework
@@ -88,6 +89,7 @@ namespace CMS.Backend.Controllers
 
         // 2. Hàm POST: Đón nhận dữ liệu mới sau khi người dùng sửa trên Form và lưu lại
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Category model)
         {

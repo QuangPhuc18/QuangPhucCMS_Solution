@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace CMS.Backend.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator,Staff")]
     public class CustomerController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -42,6 +42,7 @@ namespace CMS.Backend.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Customer model)
         {
@@ -69,6 +70,7 @@ namespace CMS.Backend.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Customer model)
         {
@@ -92,6 +94,7 @@ namespace CMS.Backend.Controllers
         // ==========================================
         // 4. XÓA KHÁCH HÀNG (DELETE)
         // ==========================================
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)
         {
             var customer = await _context.Customers.FindAsync(id);

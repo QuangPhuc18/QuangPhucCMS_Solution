@@ -37,5 +37,9 @@ namespace CMS_DATA.Entities
 
         // Mối quan hệ: Một sản phẩm xuất hiện trong nhiều chi tiết đơn hàng
         public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
+        [Required]
+        public int BrandId { get; set; }
+
+        public Brand? Brand { get; set; }
     }
 }

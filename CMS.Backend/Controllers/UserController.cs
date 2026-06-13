@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CMS.Backend.Controllers
 {
     //[Authorize]
-    //[Authorize(Roles = "Administrator")]
+    [Authorize(Roles = "Administrator,Staff")]
     public class UserController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -28,6 +28,7 @@ namespace CMS.Backend.Controllers
         public IActionResult Create() => View();
 
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Create(User model)
         {
             var checkExist = _context.Users.Any(u => u.Username == model.Username);
@@ -56,6 +57,7 @@ namespace CMS.Backend.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         public IActionResult Edit(User model, string? NewPassword)
         {
             var existingUser = _context.Users.AsNoTracking().FirstOrDefault(u => u.Id == model.Id);
@@ -77,6 +79,7 @@ namespace CMS.Backend.Controllers
             return RedirectToAction("Index");
         }
         // 4. XÓA
+        [Authorize(Roles = "Administrator")]
         public IActionResult Delete(int id)
         {
             var user = _context.Users.Find(id);

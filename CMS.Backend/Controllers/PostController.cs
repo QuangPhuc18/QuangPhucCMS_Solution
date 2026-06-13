@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace CMS.Backend.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrator,Staff")]
     public class PostController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -114,6 +114,7 @@ namespace CMS.Backend.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Post model, IFormFile? uploadImage)
         {
@@ -171,6 +172,7 @@ namespace CMS.Backend.Controllers
         // ==========================================
         // 5. XÓA BÀI VIẾT
         // ==========================================
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> Delete(int id)
         {
             var post = await _context.Posts.FindAsync(id);

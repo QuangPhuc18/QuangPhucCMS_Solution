@@ -14,8 +14,10 @@ using System.Threading.Tasks;
 
 namespace CMS.Backend.Controllers
 {
+
     public class AccountController : Controller
     {
+
         private readonly ApplicationDbContext _context;
 
         public AccountController(ApplicationDbContext context)

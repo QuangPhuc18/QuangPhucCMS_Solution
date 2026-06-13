@@ -29,7 +29,7 @@ namespace CMS_DATA
         public DbSet<Customer> Customers { get; set; } // Bảng khách hàng
         public DbSet<Order> Orders { get; set; } // Bảng đơn hàng
         public DbSet<OrderDetail> OrderDetails { get; set; } // Bảng chi tiết đơn hàng
-
+        public DbSet<Brand> Brands { get; set; } // Bảng thương hiệu
 
 
     }

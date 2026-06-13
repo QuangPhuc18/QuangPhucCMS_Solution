@@ -1,12 +1,15 @@
-﻿using CMS_DATA;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CMS_DATA;
+using CMS_DATA.Entities;
+using CMS_DATA.DTOs;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CMS.Backend.Controllers.Api
 {
-    [Route("api/[controller]")]
+    [Route("api/posts")]
     [ApiController]
     public class PostsController : ControllerBase
     {
@@ -17,71 +20,66 @@ namespace CMS.Backend.Controllers.Api
             _context = context;
         }
 
-        // ==========================================
-        // 1. API LẤY TOÀN BỘ BÀI VIẾT MỚI NHẤT
-        // URL: GET https://localhost:xxxx/api/posts
-        // ==========================================
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<Post>>> GetPosts()
         {
-            var posts = await _context.Posts
-                .Include(p => p.Category)
+            return await _context.Posts
+                .Include(p => p.Category) // Lấy kèm thông tin Danh mục bài viết
                 .OrderByDescending(p => p.Id)
-                .Select(p => new {
-                    p.Id,
-                    p.Title,
-                    p.ImageUrl,
-                    CreatedDate = p.CreatedDate,
-                    CategoryName = p.Category != null ? p.Category.Name : "Chưa phân loại"
-                })
                 .ToListAsync();
-
-            return Ok(posts);
         }
 
-        // ==========================================
-        // 2. API LẤY BÀI VIẾT THEO ID DANH MỤC
-        // URL: GET https://localhost:xxxx/api/posts/category/1
-        // ==========================================
-        [HttpGet("category/{categoryId}")]
-        public async Task<IActionResult> GetByCategory(int categoryId)
-        {
-            var posts = await _context.Posts
-                .Include(p => p.Category)
-                .Where(p => p.CategoryId == categoryId)
-                .OrderByDescending(p => p.Id)
-                .Select(p => new {
-                    p.Id,
-                    p.Title,
-                    p.ImageUrl,
-                    CreatedDate = p.CreatedDate,
-                    CategoryName = p.Category != null ? p.Category.Name : "Chưa phân loại"
-                })
-                .ToListAsync();
-
-            return Ok(posts);
-        }
-
-        // ==========================================
-        // 🔥 3. API LẤY CHI TIẾT 1 BÀI VIẾT THEO ID (MỚI BỔ SUNG)
-        // URL: GET https://localhost:xxxx/api/posts/5
-        // ==========================================
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetDetail(int id)
+        public async Task<ActionResult<Post>> GetPost(int id)
         {
-            // Tìm bài viết theo ID, lấy kèm luôn thông tin Category
             var post = await _context.Posts
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            // Nếu không tìm thấy, trả về lỗi 404 kèm gói JSON thông báo
-            if (post == null)
-            {
-                return NotFound(new { message = "Không tìm thấy bài viết này trong hệ thống" });
-            }
-
-            // Nếu tìm thấy, trả về toàn bộ Object (bao gồm cả Content HTML)
+            if (post == null) return NotFound(new { message = "Không tìm thấy bài viết!" });
             return Ok(post);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Post>> PostPost(PostCreateDto dto)
+        {
+            var post = new Post
+            {
+                Title = dto.Title,
+                Content = dto.Content,
+                ImageUrl = dto.ImageUrl,
+                CategoryId = dto.CategoryId
+            };
+
+            _context.Posts.Add(post);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutPost(int id, PostCreateDto dto)
+        {
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null) return NotFound(new { message = "Không tìm thấy bài viết!" });
+
+            post.Title = dto.Title;
+            post.Content = dto.Content;
+            post.ImageUrl = dto.ImageUrl;
+            post.CategoryId = dto.CategoryId;
+
+            _context.Entry(post).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePost(int id)
+        {
+            var post = await _context.Posts.FindAsync(id);
+            if (post == null) return NotFound();
+            _context.Posts.Remove(post);
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
     }
 }

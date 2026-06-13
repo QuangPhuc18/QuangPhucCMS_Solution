@@ -1,23 +1,59 @@
-﻿import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // 🔥 Import Link
-import productService from '../services/productService'; // 🔥 Import service
+﻿import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
-    // Khai báo state lưu danh sách danh mục
-    const [categories, setCategories] = useState([]);
+    const navigate = useNavigate();
 
-    // Gọi API lấy danh mục khi Header vừa render
+    // Các State quản lý trạng thái Đăng nhập, Menu & Số lượng giỏ hàng
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [showUserMenu, setShowUserMenu] = useState(false);
+    const [cartCount, setCartCount] = useState(0); // 🔥 State đếm số lượng giỏ hàng
+    const menuRef = useRef(null);
+
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const data = await productService.getCategories();
-                setCategories(data);
-            } catch (error) {
-                console.error("Lỗi khi tải danh mục Header:", error);
+        // 1. Kiểm tra Token đăng nhập
+        const token = localStorage.getItem('token');
+        if (token) {
+            setIsLoggedIn(true);
+        }
+
+        // 2. Sự kiện click ra ngoài vùng menu dropdown thì đóng lại
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setShowUserMenu(false);
             }
         };
-        fetchCategories();
+        document.addEventListener('mousedown', handleClickOutside);
+
+        // 🔥 3. Hàm tính tổng số lượng sản phẩm trong giỏ hàng
+        const updateCartCount = () => {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            // Tính tổng số lượng (quantity) của tất cả sản phẩm
+            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            setCartCount(totalItems);
+        };
+
+        // Chạy lần đầu khi load trang
+        updateCartCount();
+
+        // Lắng nghe sự kiện 'cartUpdated' phát ra từ các trang khác (Chi tiết SP, Giỏ hàng)
+        window.addEventListener('cartUpdated', updateCartCount);
+
+        // Cleanup function (Dọn dẹp sự kiện khi component bị hủy)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            window.removeEventListener('cartUpdated', updateCartCount);
+        };
     }, []);
+
+    // Hàm xử lý Đăng xuất
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setIsLoggedIn(false);
+        setShowUserMenu(false);
+        navigate('/');
+    };
 
     return (
         <header className="bg-surface dark:bg-surface-dim fixed top-0 w-full z-50 shadow-md dark:bg-surface-container">
@@ -44,45 +80,81 @@ const Header = () => {
                                 <span className="text-label-md font-label-md text-primary">1800 1234</span>
                             </div>
                         </div>
-                        <button aria-label="shopping_cart" className="p-2 hover:text-primary transition-colors duration-200 relative group">
+
+                        {/* 🔥 Nút Giỏ Hàng (Tự động cập nhật số lượng) */}
+                        <Link to="/cart" aria-label="shopping_cart" className="p-2 hover:text-primary transition-colors duration-200 relative group outline-none">
                             <span className="material-symbols-outlined">shopping_cart</span>
-                            <span className="absolute top-1 right-1 bg-primary text-on-primary text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">2</span>
-                        </button>
-                        <button aria-label="person" className="p-2 hover:text-primary transition-colors duration-200">
-                            <span className="material-symbols-outlined">person</span>
-                        </button>
+                            {/* Chỉ hiển thị bong bóng đỏ khi có sản phẩm trong giỏ */}
+                            {cartCount > 0 && (
+                                <span className="absolute top-1 right-1 bg-primary text-on-primary text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center animate-fade-in">
+                                    {cartCount > 99 ? '99+' : cartCount}
+                                </span>
+                            )}
+                        </Link>
+
+                        {/* KHU VỰC ICON USER & DROPDOWN ĐĂNG NHẬP */}
+                        <div className="relative" ref={menuRef}>
+                            <button
+                                aria-label="person"
+                                className={`p-2 transition-colors duration-200 ${showUserMenu ? 'text-primary' : 'hover:text-primary'}`}
+                                onClick={() => setShowUserMenu(!showUserMenu)}
+                            >
+                                <span className="material-symbols-outlined">person</span>
+                            </button>
+
+                            {/* Menu xổ xuống */}
+                            {showUserMenu && (
+                                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-xl shadow-xl py-2 z-50 animate-fade-in animate-duration-200">
+                                    {!isLoggedIn ? (
+                                        <>
+                                            <div className="px-4 py-2 text-xs text-slate-400 font-medium border-b border-slate-50">Xin chào khách quý!</div>
+                                            <Link to="/login" className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary transition-colors font-medium" onClick={() => setShowUserMenu(false)}>
+                                                <span className="material-symbols-outlined text-lg">login</span> Đăng nhập
+                                            </Link>
+                                            <Link to="/register" className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors" onClick={() => setShowUserMenu(false)}>
+                                                <span className="material-symbols-outlined text-lg">person_add</span> Đăng ký tài khoản
+                                            </Link>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Link to="/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setShowUserMenu(false)}>
+                                                <span className="material-symbols-outlined text-lg">account_circle</span> Trang cá nhân
+                                            </Link>
+                                            <Link to="/my-orders" className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors" onClick={() => setShowUserMenu(false)}>
+                                                <span className="material-symbols-outlined text-lg">package_2</span> Đơn hàng của tôi
+                                            </Link>
+                                            <hr className="my-1 border-slate-100" />
+                                            <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium text-left">
+                                                <span className="material-symbols-outlined text-lg">logout</span> Đăng xuất
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
                         <button aria-label="headset_mic" className="p-2 hover:text-primary transition-colors duration-200 md:hidden">
                             <span className="material-symbols-outlined">headset_mic</span>
                         </button>
                     </div>
                 </div>
 
-                {/* Mobile Search */}
                 <div className="md:hidden w-full relative pt-2">
                     <input className="w-full h-10 pl-10 pr-4 rounded-DEFAULT border border-outline-variant bg-surface-container-lowest text-body-md focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="Tìm kiếm sản phẩm..." type="text" />
                     <span className="material-symbols-outlined absolute left-3 top-4.5 text-on-surface-variant">search</span>
                 </div>
 
-                {/* 🔥 MENU DANH MỤC ĐỘNG TỪ DATABASE */}
+                {/* MENU CHÍNH CỐ ĐỊNH */}
                 <nav className="hidden md:flex items-center gap-lg mt-sm overflow-x-auto hide-scroll">
-                    {/* Nút mặc định luôn có */}
-                    <Link to="/shop" className="text-on-surface-variant font-medium pb-1 whitespace-nowrap hover:text-primary transition-colors duration-200">
-                        Tất cả
+                    <Link to="/" className="text-on-surface-variant font-medium pb-1 whitespace-nowrap hover:text-primary transition-colors duration-200">
+                        Trang chủ
                     </Link>
-
-                    {/* Dùng map() để lặp mảng danh mục ra thành các thẻ Link */}
-                    {categories.length > 0 ? categories.map((cat) => (
-                        <Link
-                            key={cat.id}
-                            // Khi click, nó sẽ truyền ID danh mục lên URL (VD: /shop/category/2)
-                            to={`/shop/category/${cat.id}`}
-                            className="text-on-surface-variant font-medium pb-1 whitespace-nowrap hover:text-primary transition-colors duration-200"
-                        >
-                            {cat.name}
-                        </Link>
-                    )) : (
-                        <span className="text-slate-400 text-sm">Đang tải danh mục...</span>
-                    )}
+                    <Link to="/shop" className="text-on-surface-variant font-medium pb-1 whitespace-nowrap hover:text-primary transition-colors duration-200">
+                        Cửa hàng
+                    </Link>
+                    <Link to="/blog" className="text-on-surface-variant font-medium pb-1 whitespace-nowrap hover:text-primary transition-colors duration-200">
+                        Tin tức / Blog
+                    </Link>
                 </nav>
             </div>
         </header>

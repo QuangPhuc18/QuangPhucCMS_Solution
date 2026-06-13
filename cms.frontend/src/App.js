@@ -7,6 +7,10 @@ import PostList from './components/PostList';
 import PostDetail from './components/PostDetail'; // 🔥 Import trang chi tiết mới tạo
 import ProductDetail from './pages/product-detail/index';
 import HeroBanner from './pages/Home/HeroBanner';
+import Login from './pages/login/index';
+import Register from './pages/register/index';
+import BlogList from './pages/blog/index'; // Nhập trang danh sách bài viết riêng
+import Cart from './pages/cart/index';
 function App() {
     return (
         <Router> {/* Bọc toàn bộ ứng dụng trong bộ định tuyến Router */}
@@ -45,9 +49,13 @@ function App() {
 
                         {/* 🔥 3. TRANG DANH MỤC (Lọc sản phẩm khi bấm vào Tivi, Tủ lạnh...) */}
                         <Route path="/shop/category/:categoryId" element={<ProductList />} />
+                        <Route path="/cart" element={<Cart />} />
                         {/* TRANG CHI TIẾT BÀI VIẾT: Tự động bật lên khi khớp URL */}
                         <Route path="/post/:id" element={<PostDetail />} />
                         <Route path="/product/:id" element={<ProductDetail />} />
+                        <Route path="/blog" element={<BlogList />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
                     </Routes>
                 </main>
 

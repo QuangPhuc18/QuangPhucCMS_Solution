@@ -26,6 +26,7 @@ namespace CMS.Backend.Controllers.Api
             return await _context.Posts
                 .Include(p => p.Category) // Lấy kèm thông tin Danh mục bài viết
                 .OrderByDescending(p => p.Id)
+                .Take(3)
                 .ToListAsync();
         }
 

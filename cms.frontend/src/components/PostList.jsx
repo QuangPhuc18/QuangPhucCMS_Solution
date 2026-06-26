@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import blogService from '../services/blogService';
 import { Link } from 'react-router-dom'; // Tối ưu SPA không lo bị load lại trang
 
@@ -67,7 +67,7 @@ const PostList = () => {
                             {/* 1. KHU VỰC ẢNH (BÊN TRÊN) - Bo tròn góc trên, giới hạn h-52 */}
                             <div className="w-full h-52 bg-surface-container relative overflow-hidden shrink-0">
                                 <img
-                                    src={item.imageUrl ? `https://localhost:7008${item.imageUrl}` : "https://via.placeholder.com/400x300?text=No+Image"}
+                                    src={item.imageUrl ? `${process.env.REACT_APP_IMAGE_BASE_URL}${item.imageUrl}` : "https://via.placeholder.com/400x300?text=No+Image"}
                                     alt={item.title}
                                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />

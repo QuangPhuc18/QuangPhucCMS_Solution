@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const Cart = () => {
@@ -100,7 +100,7 @@ const Cart = () => {
                                 <div className="col-span-1 md:col-span-6 flex items-center gap-4">
                                     <Link to={`/product/${item.id}`} className="w-20 h-20 md:w-24 md:h-24 bg-slate-50 rounded-xl flex items-center justify-center shrink-0 border border-slate-100 overflow-hidden">
                                         <img
-                                            src={item.imageUrl ? `https://localhost:7008${item.imageUrl}` : "https://via.placeholder.com/150?text=DigiHome"}
+                                            src={item.imageUrl ? `${process.env.REACT_APP_IMAGE_BASE_URL}${item.imageUrl}` : "https://via.placeholder.com/150?text=DigiHome"}
                                             alt={item.name}
                                             className="w-full h-full object-cover mix-blend-multiply"
                                         />

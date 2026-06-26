@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import blogService from '../services/blogService';
 
@@ -68,7 +68,7 @@ const PostDetail = () => {
             <div className="w-full aspect-[16/9] rounded-xl overflow-hidden bg-surface-container mb-8 shadow-sm">
                 <img
                     // 🔥 Thay xxxx thành số cổng Backend của em
-                    src={post.imageUrl ? `https://localhost:7008${post.imageUrl}` : "https://via.placeholder.com/800x450?text=DigiHome+Electronics"}
+                    src={post.imageUrl ? `${process.env.REACT_APP_IMAGE_BASE_URL}${post.imageUrl}` : "https://via.placeholder.com/800x450?text=DigiHome+Electronics"}
                     alt={post.title}
                     className="w-full h-full object-cover"
                 />

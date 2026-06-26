@@ -1,0 +1,44 @@
+@model CMS_DATA.Entities.Banner
+
+@{
+    ViewData["Title"] = "Xóa Banner";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-danger rounded-3">
+                <div class="card-header bg-danger text-white py-3 border-bottom">
+                    <h4 class="mb-0 fw-bold">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> XÁC NHẬN XÓA BANNER
+                    </h4>
+                </div>
+
+                <div class="card-body p-4 text-center">
+                    <h5 class="text-danger mb-4">Bạn có chắc chắn muốn xóa Banner này không? (Hành động này không thể hoàn tác)</h5>
+                    
+                    <div class="bg-light p-3 rounded-3 border mb-4">
+                        <h3 class="fw-bold text-dark mb-2">@Model.Title</h3>
+                        @if (!string.IsNullOrEmpty(Model.Subtitle))
+                        {
+                            <p class="text-muted fst-italic">"@Model.Subtitle"</p>
+                        }
+                        <img src="@Model.ImageUrl" alt="@Model.Title" class="img-fluid rounded shadow-sm border mt-2" style="max-height: 250px; object-fit: contain;" />
+                    </div>
+
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-center gap-3 mt-4">
+                            <a asp-action="Index" class="btn btn-secondary btn-lg fw-bold px-4 shadow-sm">
+                                <i class="bi bi-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-danger btn-lg fw-bold px-4 shadow-sm">
+                                <i class="bi bi-trash"></i> Xóa vĩnh viễn
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

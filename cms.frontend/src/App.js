@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -11,6 +11,9 @@ import Login from './pages/login/index';
 import Register from './pages/register/index';
 import BlogList from './pages/blog/index'; // Nhập trang danh sách bài viết riêng
 import Cart from './pages/cart/index';
+import Checkout from './pages/checkout/index';
+import Profile from './pages/profile/index'; // Nhập trang Profile
+
 function App() {
     return (
         <Router> {/* Bọc toàn bộ ứng dụng trong bộ định tuyến Router */}
@@ -24,19 +27,8 @@ function App() {
                         {/* TRANG CHỦ: Hiển thị Banner, Sản phẩm, Tin tức */}
                         <Route path="/" element={
                             <>
-                                {/* Khối Banner đỏ */}
-                                <section className="mb-xl relative rounded-xl overflow-hidden shadow-[0px_2px_8px_rgba(0,0,0,0.05)] bg-primary-container h-[200px] md:h-[400px] flex items-center justify-center">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-primary to-surface-tint opacity-90"></div>
-                                    <div className="relative z-10 text-center flex flex-col items-center">
-                                        <span className="material-symbols-outlined text-on-primary text-[48px] md:text-[80px] mb-2" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
-                                        <h1 className="text-display-lg font-display-lg text-on-primary mb-md tracking-tight">SIÊU SALE HÔM NAY</h1>
-                                        <div className="flex gap-sm items-center bg-on-primary text-primary px-lg py-sm rounded-full font-headline-md">
-                                            <span>05</span><span className="text-on-surface-variant text-body-md">:</span>
-                                            <span>42</span><span className="text-on-surface-variant text-body-md">:</span>
-                                            <span>18</span>
-                                        </div>
-                                    </div>
-                                </section>
+                                {/* Khối Banner Động */}
+                                <HeroBanner />
 
                                 {/* Danh sách sản phẩm điện máy */}
                                 <ProductList />
@@ -50,12 +42,15 @@ function App() {
                         {/* 🔥 3. TRANG DANH MỤC (Lọc sản phẩm khi bấm vào Tivi, Tủ lạnh...) */}
                         <Route path="/shop/category/:categoryId" element={<ProductList />} />
                         <Route path="/cart" element={<Cart />} />
+                        <Route path="/checkout" element={<Checkout />} />
                         {/* TRANG CHI TIẾT BÀI VIẾT: Tự động bật lên khi khớp URL */}
                         <Route path="/post/:id" element={<PostDetail />} />
                         <Route path="/product/:id" element={<ProductDetail />} />
                         <Route path="/blog" element={<BlogList />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/my-orders" element={<Profile />} />
                     </Routes>
                 </main>
 

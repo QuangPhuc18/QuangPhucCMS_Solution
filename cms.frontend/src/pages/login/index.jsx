@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Dùng axios thẳng hoặc tạo authService riêng tùy em
 
@@ -27,8 +27,8 @@ const Login = () => {
             setLoading(true);
 
             // 🔥 GỌI API ĐĂNG NHẬP XUỐNG BACKEND C# 
-            // Em nhớ đổi cổng 7008 và đường dẫn /api/auth/login cho khớp với Backend của em nhé
-            const response = await axios.post('https://localhost:7008/api/auth/login', formData);
+            // Đã đồng bộ sử dụng biến môi trường .env
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, formData);
 
             if (response.data && response.data.token) {
                 // 🔥 Lưu token vào localStorage để Header nhận diện trạng thái Đăng nhập
@@ -39,7 +39,8 @@ const Login = () => {
                     localStorage.setItem('user', JSON.stringify(response.data.user));
                 }
 
-                // Đăng nhập thành công -> Đá về trang chủ vèo vèo
+                // Đăng nhập thành công -> Bắn event để Header cập nhật
+                window.dispatchEvent(new Event('authChange'));
                 navigate('/');
             }
         } catch (err) {

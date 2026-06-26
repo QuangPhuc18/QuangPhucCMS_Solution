@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -11,7 +11,7 @@ const Register = () => {
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
-        phoneNumber: '',
+        phone: '',
         password: '',
         address: ''
     });
@@ -32,8 +32,8 @@ const Register = () => {
 
         try {
             setLoading(true);
-            // 🔥 Gọi API đăng ký (Em nhớ check lại route này ở Backend nhé)
-            const response = await axios.post('https://localhost:7008/api/auth/register', formData);
+            // 🔥 Gọi API đăng ký (Đã đồng bộ biến môi trường .env)
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, formData);
 
             if (response.status === 200 || response.status === 201) {
                 alert('Đăng ký thành công! Hãy đăng nhập để tiếp tục.');
@@ -101,9 +101,9 @@ const Register = () => {
                         <span className="material-symbols-outlined absolute left-4 top-3 text-slate-400 text-[20px]">call</span>
                         <input
                             type="text"
-                            name="phoneNumber"
+                            name="phone"
                             placeholder="Số điện thoại"
-                            value={formData.phoneNumber}
+                            value={formData.phone}
                             onChange={handleChange}
                             className="w-full h-12 pl-12 pr-4 rounded-xl border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-sm bg-slate-50/30"
                         />

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CMS_DATA;
@@ -21,12 +21,30 @@ namespace CMS.Backend.Controllers.Api
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<ActionResult<IEnumerable<Product>>> GetProducts(
+            [FromQuery] string? keyword,
+            [FromQuery] int? brandId,
+            [FromQuery] decimal? minPrice,
+            [FromQuery] decimal? maxPrice)
         {
-            return await _context.Products
+            var query = _context.Products
                 .Include(p => p.CategoryProduct)
-                .OrderByDescending(p => p.Id)
-                .ToListAsync();
+                .Include(p => p.Brand)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(keyword))
+                query = query.Where(p => p.Name.Contains(keyword) || p.Description.Contains(keyword));
+
+            if (brandId.HasValue)
+                query = query.Where(p => p.BrandId == brandId.Value);
+
+            if (minPrice.HasValue)
+                query = query.Where(p => p.Price >= minPrice.Value);
+
+            if (maxPrice.HasValue)
+                query = query.Where(p => p.Price <= maxPrice.Value);
+
+            return await query.OrderByDescending(p => p.Id).ToListAsync();
         }
 
         [HttpGet("{id}")]
@@ -34,21 +52,41 @@ namespace CMS.Backend.Controllers.Api
         {
             var product = await _context.Products
                 .Include(p => p.CategoryProduct)
+                .Include(p => p.Brand)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (product == null) return NotFound(new { message = "Không tìm thấy sản phẩm!" });
 
             return product;
         }
+
         [HttpGet("category/{categoryId}")]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProductsByCategory(int categoryId)
+        public async Task<ActionResult<IEnumerable<Product>>> GetProductsByCategory(
+            int categoryId,
+            [FromQuery] string? keyword,
+            [FromQuery] int? brandId,
+            [FromQuery] decimal? minPrice,
+            [FromQuery] decimal? maxPrice)
         {
-            var products = await _context.Products
+            var query = _context.Products
                 .Include(p => p.CategoryProduct)
-                .Include(p => p.Brand) // Bổ sung Brand để React hiển thị tên thương hiệu (Sony, Samsung...)
+                .Include(p => p.Brand) // Bổ sung Brand để React hiển thị tên thương hiệu
                 .Where(p => p.CategoryProductId == categoryId)
-                .OrderByDescending(p => p.Id)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(keyword))
+                query = query.Where(p => p.Name.Contains(keyword) || p.Description.Contains(keyword));
+
+            if (brandId.HasValue)
+                query = query.Where(p => p.BrandId == brandId.Value);
+
+            if (minPrice.HasValue)
+                query = query.Where(p => p.Price >= minPrice.Value);
+
+            if (maxPrice.HasValue)
+                query = query.Where(p => p.Price <= maxPrice.Value);
+
+            var products = await query.OrderByDescending(p => p.Id).ToListAsync();
 
             // Dù không có sản phẩm nào thì vẫn trả về mảng rỗng [] thay vì báo lỗi
             return Ok(products);

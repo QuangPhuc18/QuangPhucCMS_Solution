@@ -1,4 +1,4 @@
-﻿//SinhVien: Lê Quang Phúc
+//SinhVien: Lê Quang Phúc
 //MSSV:2123110118
 //Lớp: CCQ2311D
 //Ngày : 16/05/2026
@@ -30,6 +30,7 @@ namespace CMS_DATA
         public DbSet<Order> Orders { get; set; } // Bảng đơn hàng
         public DbSet<OrderDetail> OrderDetails { get; set; } // Bảng chi tiết đơn hàng
         public DbSet<Brand> Brands { get; set; } // Bảng thương hiệu
+        public DbSet<Banner> Banners { get; set; } // Bảng Banner động
 
 
     }

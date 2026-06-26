@@ -1,4 +1,4 @@
-﻿//import React, { useState } from 'react';
+//import React, { useState } from 'react';
 
 //const ProductInfo = ({ product }) => {
 //    const [quantity, setQuantity] = useState(1);
@@ -198,7 +198,7 @@ const ProductInfo = ({ product }) => {
             <div className="w-full lg:w-[55%] flex flex-col gap-md">
                 <div className="relative bg-surface-container-lowest rounded-lg border border-surface-variant p-lg zoom-container cursor-crosshair">
                     <img
-                        src={product?.imageUrl ? `https://localhost:7008${product.imageUrl}` : "https://via.placeholder.com/500x500?text=No+Image"}
+                        src={product?.imageUrl ? `${process.env.REACT_APP_IMAGE_BASE_URL}${product.imageUrl}` : "https://via.placeholder.com/500x500?text=No+Image"}
                         alt={product?.name}
                         className="w-full h-auto object-contain max-h-[500px] zoom-image mix-blend-multiply"
                     />

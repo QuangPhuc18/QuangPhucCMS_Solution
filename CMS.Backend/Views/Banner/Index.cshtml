@@ -1,0 +1,87 @@
+@model IEnumerable<CMS_DATA.Entities.Banner>
+
+@{
+    ViewData["Title"] = "Quản lý Banner";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+            <h4 class="mb-0 text-primary fw-bold text-uppercase">
+                <i class="bi bi-images text-danger me-2"></i> DANH SÁCH BANNER
+            </h4>
+            <a asp-action="Create" class="btn btn-success fw-bold shadow-sm d-flex align-items-center gap-2">
+                <i class="bi bi-plus-circle"></i> Thêm Banner mới
+            </a>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width: 250px;">Hình Ảnh</th>
+                            <th>Tiêu Đề</th>
+                            <th class="text-center" style="width: 150px;">Trạng Thái</th>
+                            <th class="text-center" style="width: 100px;">Thứ Tự</th>
+                            <th class="text-center" style="width: 150px;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="text-center p-3">
+                                        <div style="width: 220px; height: 100px; overflow: hidden; border-radius: 8px; border: 1px solid #dee2e6; margin: 0 auto; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                                            <img src="@item.ImageUrl" alt="@item.Title" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.src='https://via.placeholder.com/220x100?text=No+Image'" />
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <h6 class="fw-bold text-dark mb-1">@item.Title</h6>
+                                        @if (!string.IsNullOrEmpty(item.Subtitle))
+                                        {
+                                            <p class="text-muted small mb-0"><i class="bi bi-quote"></i> @item.Subtitle</p>
+                                        }
+
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.IsActive)
+                                        {
+                                            <span class="badge bg-success px-3 py-2 rounded-pill"><i class="bi bi-check-circle"></i> Đang Bật</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary px-3 py-2 rounded-pill"><i class="bi bi-x-circle"></i> Đã Tắt</span>
+                                        }
+                                    </td>
+                                    <td class="text-center fw-bold text-secondary fs-5">
+                                        @item.DisplayOrder
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-warning mb-1 w-100 fw-bold">
+                                            <i class="bi bi-pencil-square"></i> Sửa
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger w-100 fw-bold">
+                                            <i class="bi bi-trash"></i> Xóa
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    <i class="bi bi-images fs-1 text-light d-block mb-3"></i>
+                                    Chưa có Banner nào trong hệ thống.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

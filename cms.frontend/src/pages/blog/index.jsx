@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import blogService from '../../services/blogService'; // Lùi 2 cấp thư mục để vào services
 
@@ -80,7 +80,7 @@ const BlogList = () => {
                             {/* Khu vực ảnh bìa bài viết */}
                             <div className="w-full aspect-[4/3] bg-surface-container relative overflow-hidden shrink-0">
                                 <img
-                                    src={item.imageUrl ? `https://localhost:7008${item.imageUrl}` : "https://via.placeholder.com/400x300?text=No+Image"}
+                                    src={item.imageUrl ? `${process.env.REACT_APP_IMAGE_BASE_URL}${item.imageUrl}` : "https://via.placeholder.com/400x300?text=No+Image"}
                                     alt={item.title}
                                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 />

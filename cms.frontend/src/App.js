@@ -9,6 +9,7 @@ import ProductDetail from './pages/product-detail/index';
 import HeroBanner from './pages/Home/HeroBanner';
 import Login from './pages/login/index';
 import Register from './pages/register/index';
+import ForgotPassword from './pages/login/ForgotPassword';
 import BlogList from './pages/blog/index'; // Nhập trang danh sách bài viết riêng
 import Cart from './pages/cart/index';
 import Checkout from './pages/checkout/index';
@@ -48,6 +49,7 @@ function App() {
                         <Route path="/product/:id" element={<ProductDetail />} />
                         <Route path="/blog" element={<BlogList />} />
                         <Route path="/login" element={<Login />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/register" element={<Register />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/my-orders" element={<Profile />} />

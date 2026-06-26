@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using CMS_DATA;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -29,9 +29,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 // Đăng ký chính sách CORS (Cho phép ReactJS Front-end gọi API)
 builder.Services.AddCors(options => {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:3000") // Mở cổng chính xác cho ứng dụng ReactJS
               .AllowAnyMethod()
               .AllowAnyHeader();
     });
@@ -39,7 +39,16 @@ builder.Services.AddCors(options => {
 
 // Đăng ký Swagger để làm tài liệu và test API
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Bắt Swagger chỉ quét các Controller dành cho API (có chứa [ApiController])
+    // Điều này giúp loại bỏ các MVC Controller ra khỏi tài liệu, tránh gây lỗi 500
+    options.DocInclusionPredicate((docName, apiDesc) =>
+    {
+        var hasApiController = apiDesc.ActionDescriptor.EndpointMetadata.OfType<Microsoft.AspNetCore.Mvc.ApiControllerAttribute>().Any();
+        return hasApiController;
+    });
+});
 
 var app = builder.Build();
 
@@ -68,7 +77,7 @@ app.UseStaticFiles();
 app.UseRouting();
 
 // 4. 🔥 KÍCH HOẠT CORS (Bắt buộc phải đặt ngay sau UseRouting và trước Auth)
-app.UseCors("AllowAll");
+app.UseCors("AllowReactApp");
 
 // 5. 🔥 KÍCH HOẠT XÁC THỰC DANH TÍNH (Kiểm tra đăng nhập)
 app.UseAuthentication();
@@ -76,7 +85,9 @@ app.UseAuthentication();
 // 6. 🔥 KÍCH HOẠT ỦY QUYỀN TRUY CẬP (Kiểm tra quyền Admin / Khách hàng)
 app.UseAuthorization();
 
-// 7. 🔥 ĐỊNH NGHĨA ROUTE ĐIỀU HƯỚNG MẶC ĐỊNH CHO WEB MVC (Đặt ở cuối cùng)
+// 7. 🔥 ĐỊNH NGHĨA ROUTE ĐIỀU HƯỚNG MẶC ĐỊNH CHO WEB MVC VÀ ÁNH XẠ API
+app.MapControllers(); // Ánh xạ các Web API Controllers
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");

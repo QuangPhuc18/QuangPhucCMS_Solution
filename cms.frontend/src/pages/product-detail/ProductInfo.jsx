@@ -126,9 +126,12 @@
 
 //export default ProductInfo;
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { isLoggedIn, getCart, saveCart } from '../../utils/cartUtils';
 
 const ProductInfo = ({ product }) => {
     const [quantity, setQuantity] = useState(1);
+    const navigate = useNavigate();
 
     // 🔥 1. State quản lý việc hiển thị thông báo (Toast Alert)
     const [showToast, setShowToast] = useState(false);
@@ -143,8 +146,14 @@ const ProductInfo = ({ product }) => {
 
     // 🔥 2. Hàm xử lý khi nhấn nút "THÊM VÀO GIỎ"
     const handleAddToCart = () => {
+        if (!isLoggedIn()) {
+            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+            navigate('/login');
+            return;
+        }
+
         // 1. Kéo giỏ hàng hiện tại từ bộ nhớ ra (Nếu chưa có thì tạo mảng rỗng [])
-        const currentCart = JSON.parse(localStorage.getItem('cart')) || [];
+        const currentCart = getCart();
 
         // 2. Kiểm tra xem sản phẩm này đã từng được thêm vào giỏ chưa
         const existingItemIndex = currentCart.findIndex(item => item.id === product.id);
@@ -164,10 +173,7 @@ const ProductInfo = ({ product }) => {
         }
 
         // 3. Đẩy mảng mới cập nhật ngược lại vào bộ nhớ
-        localStorage.setItem('cart', JSON.stringify(currentCart));
-
-        // 4. Phát tín hiệu ngầm báo cho Header biết để tự cập nhật số đếm
-        window.dispatchEvent(new Event('cartUpdated'));
+        saveCart(currentCart);
 
         // 5. Hiển thị thông báo thành công (code cũ)
         setShowToast(true);
@@ -262,7 +268,13 @@ const ProductInfo = ({ product }) => {
 
                 {/* Nút Hành động */}
                 <div className="flex flex-col sm:flex-row gap-md mb-xl">
-                    <button className="flex-1 bg-primary text-on-primary font-label-md text-label-md py-md rounded-lg hover:bg-on-primary-fixed-variant transition-colors shadow-sm">
+                    <button 
+                        onClick={() => {
+                            handleAddToCart();
+                            if (isLoggedIn()) navigate('/checkout');
+                        }}
+                        className="flex-1 bg-primary text-on-primary font-label-md text-label-md py-md rounded-lg hover:bg-on-primary-fixed-variant transition-colors shadow-sm"
+                    >
                         MUA NGAY
                     </button>
 

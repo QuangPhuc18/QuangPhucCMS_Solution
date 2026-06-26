@@ -138,9 +138,9 @@ const Login = () => {
                             </label>
                         </div>
 
-                        <a href="#" className="font-semibold text-primary hover:underline">
+                        <Link to="/forgot-password" className="font-semibold text-primary hover:underline">
                             Quên mật khẩu?
-                        </a>
+                        </Link>
                     </div>
 
                     {/* Nút bấm Submit */}

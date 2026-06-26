@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import productService from '../../services/productService'; // Chú ý đường dẫn lùi 2 cấp
 import ProductInfo from './ProductInfo';
+import { isLoggedIn, getCart, saveCart } from '../../utils/cartUtils';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -37,7 +38,13 @@ const ProductDetail = () => {
     }, [id]);
 
     const handleAddToCart = (item) => {
-        const currentCart = JSON.parse(localStorage.getItem('cart')) || [];
+        if (!isLoggedIn()) {
+            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+            navigate('/login');
+            return;
+        }
+        
+        const currentCart = getCart();
         const existingItemIndex = currentCart.findIndex(cartItem => cartItem.id === item.id);
 
         if (existingItemIndex !== -1) {
@@ -51,8 +58,7 @@ const ProductDetail = () => {
                 quantity: 1
             });
         }
-        localStorage.setItem('cart', JSON.stringify(currentCart));
-        window.dispatchEvent(new Event('cartUpdated'));
+        saveCart(currentCart);
         alert('Đã thêm sản phẩm vào giỏ hàng!');
     };
 

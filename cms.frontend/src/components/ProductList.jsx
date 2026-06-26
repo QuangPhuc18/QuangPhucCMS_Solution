@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import productService from '../services/productService';
+import { isLoggedIn, getCart, saveCart } from '../utils/cartUtils';
 
 const ProductList = () => {
     const [products, setProducts] = useState([]);
@@ -92,7 +93,15 @@ const ProductList = () => {
 
     // Thêm sản phẩm vào giỏ hàng
     const handleAddToCart = (product) => {
-        const currentCart = JSON.parse(localStorage.getItem('cart')) || [];
+        // 1. Kiểm tra đăng nhập
+        if (!isLoggedIn()) {
+            // Có thể dùng toast hoặc custom popup, ở đây tạm thời alert và redirect
+            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+            navigate('/login');
+            return;
+        }
+
+        const currentCart = getCart();
         const existingItemIndex = currentCart.findIndex(item => item.id === product.id);
 
         if (existingItemIndex !== -1) {
@@ -107,8 +116,7 @@ const ProductList = () => {
             });
         }
 
-        localStorage.setItem('cart', JSON.stringify(currentCart));
-        window.dispatchEvent(new Event('cartUpdated'));
+        saveCart(currentCart);
 
         // Mở Toast
         setShowToast(true);

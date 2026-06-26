@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { isLoggedIn, getCart, saveCart } from '../../utils/cartUtils';
 
 const Cart = () => {
-    // 1. Khởi tạo giỏ hàng từ localStorage
+    const navigate = useNavigate();
+
+    // 1. Khởi tạo giỏ hàng từ localStorage thông qua hàm tiện ích
     const [cartItems, setCartItems] = useState(() => {
-        const savedCart = localStorage.getItem('cart');
-        return savedCart ? JSON.parse(savedCart) : [];
+        return getCart();
     });
+
+    useEffect(() => {
+        if (!isLoggedIn()) {
+            alert("Vui lòng đăng nhập để xem giỏ hàng của bạn!");
+            navigate('/login');
+        }
+    }, [navigate]);
 
     // 🔥 2. State quản lý Modal xác nhận xóa custom
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,8 +23,10 @@ const Cart = () => {
 
     // Lắng nghe thay đổi của giỏ hàng để lưu vào localStorage
     useEffect(() => {
-        localStorage.setItem('cart', JSON.stringify(cartItems));
-        window.dispatchEvent(new Event('cartUpdated'));
+        // Chỉ lưu nếu đã đăng nhập
+        if (isLoggedIn()) {
+            saveCart(cartItems);
+        }
     }, [cartItems]);
 
     // Xử lý Tăng số lượng

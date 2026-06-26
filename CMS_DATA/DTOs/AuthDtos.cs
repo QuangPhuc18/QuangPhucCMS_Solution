@@ -41,11 +41,18 @@ namespace CMS_DATA.DTOs
 
     public class CustomerChangePasswordDto
     {
-        [Required(ErrorMessage = "Mật khẩu hiện tại là bắt buộc")]
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu hiện tại")]
         public string CurrentPassword { get; set; }
 
-        [Required(ErrorMessage = "Mật khẩu mới là bắt buộc")]
-        [MinLength(6, ErrorMessage = "Mật khẩu mới phải từ 6 ký tự trở lên")]
+        [Required(ErrorMessage = "Vui lòng nhập mật khẩu mới")]
+        [MinLength(6, ErrorMessage = "Mật khẩu mới phải có ít nhất 6 ký tự")]
         public string NewPassword { get; set; }
+    }
+
+    public class ForgotPasswordDto
+    {
+        [Required(ErrorMessage = "Vui lòng nhập Email")]
+        [EmailAddress(ErrorMessage = "Email không đúng định dạng")]
+        public string Email { get; set; }
     }
 }

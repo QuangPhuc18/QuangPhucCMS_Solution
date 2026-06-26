@@ -5,6 +5,7 @@ using CMS_DATA.Entities;
 using CMS_DATA.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using CMS.Backend.Helpers;
 
 namespace CMS.Backend.Controllers.Api
 {
@@ -159,6 +160,53 @@ namespace CMS.Backend.Controllers.Api
             catch (Exception ex)
             {
                 return BadRequest(new { message = $"Lỗi hệ thống khi đổi mật khẩu: {ex.Message}" });
+            }
+        }
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto dto)
+        {
+            try
+            {
+                var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Email == dto.Email);
+                if (customer == null)
+                {
+                    // Trả về OK giả lập để tránh bị hacker dùng kỹ thuật Email Enumeration dò tìm tài khoản
+                    return Ok(new { message = "Nếu email này tồn tại, chúng tôi đã gửi mật khẩu mới cho bạn." });
+                }
+
+                // Tạo mật khẩu mới ngẫu nhiên (Ví dụ: Mật khẩu mới gồm 6 chữ số)
+                string newPassword = new Random().Next(100000, 999999).ToString();
+                
+                // MẸO HỖ TRỢ TEST: In mật khẩu mới ra màn hình đen Console của Backend để bạn dễ dàng nhìn thấy mà không cần vào Email thật
+                Console.WriteLine($"\n===========================================");
+                Console.WriteLine($"[TESTING] KHÁCH YÊU CẦU QUÊN MẬT KHẨU");
+                Console.WriteLine($"Email: {customer.Email}");
+                Console.WriteLine($"MẬT KHẨU MỚI LÀ: {newPassword}");
+                Console.WriteLine($"===========================================\n");
+
+                // Mã hóa mật khẩu mới
+                customer.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+                _context.Entry(customer).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+
+                // Gửi email cho khách hàng
+                string emailBody = $@"
+                    <h2>Yêu cầu cấp lại mật khẩu</h2>
+                    <p>Chào <b>{customer.FullName}</b>,</p>
+                    <p>Mật khẩu mới của bạn là: <b>{newPassword}</b></p>
+                    <p>Vui lòng đăng nhập và đổi lại mật khẩu ngay sau khi truy cập thành công.</p>
+                    <br/>
+                    <p>Trân trọng,<br/>Quang Phuc CMS Team</p>
+                ";
+
+                await EmailHelper.SendEmailAsync(customer.Email, "Mật khẩu mới - Quang Phuc CMS", emailBody);
+
+                return Ok(new { message = "Mật khẩu mới đã được gửi vào Email của bạn. Vui lòng kiểm tra hòm thư!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Lỗi hệ thống khi cấp lại mật khẩu: {ex.Message}" });
             }
         }
     }

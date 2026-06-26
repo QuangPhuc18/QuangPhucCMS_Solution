@@ -6,6 +6,10 @@ const BlogList = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Khai báo state phục vụ phân trang
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 3; // CHỈNH LẠI THÀNH 2 ĐỂ BẠN DỄ THẤY PHÂN TRANG KHI CÓ ÍT BÀI VIẾT
+
     useEffect(() => {
         const fetchAllPosts = async () => {
             try {
@@ -71,56 +75,98 @@ const BlogList = () => {
                     <p className="text-on-surface-variant font-medium">Hiện tại chưa có bài viết cẩm nang nào trong hệ thống.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {posts.map((item) => (
-                        <div
-                            key={item.id}
-                            className="bg-surface-container-lowest rounded-2xl flex flex-col shadow-[0px_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0px_12px_32px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden border border-slate-100"
-                        >
-                            {/* Khu vực ảnh bìa bài viết */}
-                            <div className="w-full aspect-[4/3] bg-surface-container relative overflow-hidden shrink-0">
-                                <img
-                                    src={item.imageUrl ? `${process.env.REACT_APP_IMAGE_BASE_URL}${item.imageUrl}` : "https://via.placeholder.com/400x300?text=No+Image"}
-                                    alt={item.title}
-                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
-                                <span className="absolute bottom-3 left-3 bg-inverse-surface/80 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-md shadow-sm">
-                                    Tin Tức
-                                </span>
-                            </div>
-
-                            {/* Khu vực thông tin chữ */}
-                            <div className="p-5 flex flex-col flex-grow">
-                                <h3 className="text-body-lg font-headline-md font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2 mb-2.5 min-h-[48px] leading-snug">
-                                    <Link to={`/post/${item.id}`} className="outline-none">
-                                        {item.title}
-                                    </Link>
-                                </h3>
-
-                                <p className="text-body-sm font-body-sm text-on-surface-variant line-clamp-3 mb-5 flex-grow leading-relaxed">
-                                    {stripHtml(item.content)}
-                                </p>
-
-                                {/* Chân thẻ chứa ngày tháng & nút đọc tiếp */}
-                                <div className="flex justify-between items-center mt-auto pt-3.5 border-t border-slate-100">
-                                    <span className="text-label-sm font-label-sm text-on-surface-variant flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[16px] text-slate-400">calendar_today</span>
-                                        {new Date().toLocaleDateString('vi-VN')}
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {posts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => (
+                            <div
+                                key={item.id}
+                                className="bg-surface-container-lowest rounded-2xl flex flex-col shadow-[0px_4px_16px_rgba(0,0,0,0.04)] hover:shadow-[0px_12px_32px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 relative group overflow-hidden border border-slate-100"
+                            >
+                                {/* Khu vực ảnh bìa bài viết */}
+                                <div className="w-full aspect-[4/3] bg-surface-container relative overflow-hidden shrink-0">
+                                    <img
+                                        src={item.imageUrl ? `${process.env.REACT_APP_IMAGE_BASE_URL}${item.imageUrl}` : "https://via.placeholder.com/400x300?text=No+Image"}
+                                        alt={item.title}
+                                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                    <span className="absolute bottom-3 left-3 bg-inverse-surface/80 backdrop-blur-sm text-white text-[11px] font-medium px-2.5 py-1 rounded-md shadow-sm">
+                                        Tin Tức
                                     </span>
-                                    <Link
-                                        to={`/post/${item.id}`}
-                                        className="text-label-md font-label-md text-primary hover:text-red-800 font-semibold flex items-center gap-0.5 group/btn"
-                                    >
-                                        Đọc tiếp
-                                        <span className="material-symbols-outlined text-[16px] group-hover/btn:translate-x-1 transition-transform">
-                                            arrow_forward
+                                </div>
+
+                                {/* Khu vực thông tin chữ */}
+                                <div className="p-5 flex flex-col flex-grow">
+                                    <h3 className="text-body-lg font-headline-md font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2 mb-2.5 min-h-[48px] leading-snug">
+                                        <Link to={`/post/${item.id}`} className="outline-none">
+                                            {item.title}
+                                        </Link>
+                                    </h3>
+
+                                    <p className="text-body-sm font-body-sm text-on-surface-variant line-clamp-3 mb-5 flex-grow leading-relaxed">
+                                        {stripHtml(item.content)}
+                                    </p>
+
+                                    {/* Chân thẻ chứa ngày tháng & nút đọc tiếp */}
+                                    <div className="flex justify-between items-center mt-auto pt-3.5 border-t border-slate-100">
+                                        <span className="text-label-sm font-label-sm text-on-surface-variant flex items-center gap-1.5">
+                                            <span className="material-symbols-outlined text-[16px] text-slate-400">calendar_today</span>
+                                            {new Date().toLocaleDateString('vi-VN')}
                                         </span>
-                                    </Link>
+                                        <Link
+                                            to={`/post/${item.id}`}
+                                            className="text-label-md font-label-md text-primary hover:text-red-800 font-semibold flex items-center gap-0.5 group/btn"
+                                        >
+                                            Đọc tiếp
+                                            <span className="material-symbols-outlined text-[16px] group-hover/btn:translate-x-1 transition-transform">
+                                                arrow_forward
+                                            </span>
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
+                        ))}
+                    </div>
+                    
+                    {/* UI PHÂN TRANG CHO BÀI VIẾT */}
+                    {Math.ceil(posts.length / itemsPerPage) > 1 && (
+                        <div className="flex justify-center items-center mt-12 gap-2">
+                            <button 
+                                onClick={() => {
+                                    setCurrentPage(prev => Math.max(prev - 1, 1));
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                disabled={currentPage === 1}
+                                className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+                            </button>
+                            
+                            {[...Array(Math.ceil(posts.length / itemsPerPage))].map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => {
+                                        setCurrentPage(i + 1);
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }}
+                                    className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all ${currentPage === i + 1 ? 'bg-[#ea580c] text-white shadow-md border-none' : 'border border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                            
+                            <button 
+                                onClick={() => {
+                                    setCurrentPage(prev => Math.min(prev + 1, Math.ceil(posts.length / itemsPerPage)));
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }}
+                                disabled={currentPage === Math.ceil(posts.length / itemsPerPage)}
+                                className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                            </button>
                         </div>
-                    ))}
-                </div>
+                    )}
+                </>
             )}
         </div>
     );

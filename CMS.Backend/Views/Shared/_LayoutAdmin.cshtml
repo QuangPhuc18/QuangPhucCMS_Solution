@@ -211,12 +211,15 @@
                     @{
                         // Lấy tên User đang đăng nhập, mặc định là Admin nếu null
                         var fullName = User.FindFirst("FullName")?.Value ?? User.Identity?.Name ?? "Admin";
+                        // Lấy quyền (Role)
+                        var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Admin";
                         // Tạo link avatar ngẫu nhiên từ tên
                         var avatarUrl = $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(fullName)}&background=random";
                     }
                     <img src="@avatarUrl" alt="Avatar" class="rounded-circle border" style="width: 36px; height: 36px; object-fit: cover;" />
                     <div class="d-none d-md-block">
                         <span class="d-block fw-bold" style="font-size: 0.9rem; color: #0f172a;">@fullName</span>
+                        <span class="d-block text-muted" style="font-size: 0.75rem;">@role</span>
                     </div>
                     <i class="bi bi-chevron-down text-muted" style="font-size: 0.8rem;"></i>
                 </div>

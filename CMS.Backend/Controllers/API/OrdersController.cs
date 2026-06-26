@@ -7,6 +7,7 @@ using CMS_DATA.Entities;
 using CMS_DATA.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using CMS.Backend.Helpers;
 
 namespace CMS.Backend.Controllers.Api
 {
@@ -68,13 +69,18 @@ namespace CMS.Backend.Controllers.Api
 
             try
             {
-                // 0. BẮT LỖI KHÓA NGOẠI: Kiểm tra CustomerId có tồn tại trong bảng Customers không!
-                // Rất nhiều trường hợp người dùng lấy ID của bảng Users truyền sang bảng Customers gây ra lỗi Foreign Key.
-                var customerExists = await _context.Customers.AnyAsync(c => c.Id == dto.CustomerId);
-                if (!customerExists)
+                // 0. BẮT LỖI KHÓA NGOẠI & CẬP NHẬT THÔNG TIN:
+                var customer = await _context.Customers.FindAsync(dto.CustomerId);
+                if (customer == null)
                 {
                     throw new Exception($"Không tìm thấy Khách hàng nào có mã ID = {dto.CustomerId} trong bảng Customers. Vui lòng tạo dữ liệu Khách hàng trước khi đặt đơn!");
                 }
+
+                // Cập nhật thông tin Khách hàng (Tên, SĐT, Địa chỉ) từ Form Checkout (Tiêu chí 29)
+                if (!string.IsNullOrEmpty(dto.FullName)) customer.FullName = dto.FullName;
+                if (!string.IsNullOrEmpty(dto.Phone)) customer.Phone = dto.Phone;
+                if (!string.IsNullOrEmpty(dto.Address)) customer.Address = dto.Address;
+                _context.Customers.Update(customer);
 
                 // 1. Ánh xạ thông tin chung của đơn hàng
                 var order = new Order
@@ -95,7 +101,17 @@ namespace CMS.Backend.Controllers.Api
 
                 _context.Orders.Add(order);
 
-                // 3. 🔥 Trừ số lượng tồn kho của từng sản phẩm trong đơn hàng
+                // 3. 🔥 Trừ số lượng tồn kho của từng sản phẩm trong đơn hàng & Tạo bảng HTML chi tiết
+                string orderDetailsHtml = @"
+                    <table border='1' cellpadding='10' cellspacing='0' style='border-collapse: collapse; width: 100%; max-width: 600px; margin-top: 15px;'>
+                        <tr style='background-color: #ea580c; color: white;'>
+                            <th align='left'>Sản phẩm</th>
+                            <th align='center'>Số lượng</th>
+                            <th align='right'>Đơn giá</th>
+                            <th align='right'>Thành tiền</th>
+                        </tr>";
+                decimal totalAmount = 0;
+
                 foreach (var detail in dto.OrderDetails)
                 {
                     var product = await _context.Products.FindAsync(detail.ProductId);
@@ -109,6 +125,17 @@ namespace CMS.Backend.Controllers.Api
                         // Trừ tồn kho
                         product.StockQuantity -= detail.Quantity;
                         _context.Products.Update(product);
+
+                        // Thêm vào bảng HTML
+                        decimal lineTotal = detail.Quantity * detail.UnitPrice;
+                        totalAmount += lineTotal;
+                        orderDetailsHtml += $@"
+                        <tr>
+                            <td align='left'><b>{product.Name}</b></td>
+                            <td align='center'>{detail.Quantity}</td>
+                            <td align='right'>{detail.UnitPrice:N0}đ</td>
+                            <td align='right'><b>{lineTotal:N0}đ</b></td>
+                        </tr>";
                     }
                     else
                     {
@@ -116,11 +143,35 @@ namespace CMS.Backend.Controllers.Api
                     }
                 }
 
+                orderDetailsHtml += $@"
+                        <tr style='background-color: #f8f9fa; font-size: 16px;'>
+                            <td colspan='3' align='right'><b>Tổng thanh toán:</b></td>
+                            <td align='right'><b style='color: #ea580c;'>{totalAmount:N0}đ</b></td>
+                        </tr>
+                    </table>";
+
                 // Lưu tất cả thay đổi vào Database
                 await _context.SaveChangesAsync();
 
                 // Xác nhận Transaction thành công
                 await transaction.CommitAsync();
+
+                // 4. 🔥 GỬI EMAIL XÁC NHẬN ĐƠN HÀNG (Tiêu chí 31)
+                string emailBody = $@"
+                    <div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+                        <h2 style='color: #ea580c;'>Cảm ơn bạn đã đặt hàng tại Quang Phuc CMS!</h2>
+                        <p>Chào <b>{customer.FullName}</b>,</p>
+                        <p>Đơn hàng <b>#{order.Id}</b> của bạn đã được ghi nhận hệ thống thành công.</p>
+                        <p>Chúng tôi sẽ giao hàng đến địa chỉ: <b>{customer.Address}</b> trong thời gian sớm nhất.</p>
+                        
+                        <h3 style='margin-bottom: 5px;'>Chi tiết đơn hàng của bạn:</h3>
+                        {orderDetailsHtml}
+
+                        <br/>
+                        <p>Trân trọng,<br/><b>Quang Phuc CMS Team</b></p>
+                    </div>
+                ";
+                await EmailHelper.SendEmailAsync(customer.Email, $"Xác nhận đơn hàng #{order.Id} - Quang Phuc CMS", emailBody);
 
                 return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
             }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import productService from '../services/productService';
+import { getCart } from '../utils/cartUtils';
 
 const Header = () => {
     const navigate = useNavigate();
@@ -52,7 +53,7 @@ const Header = () => {
 
         // 3. Đếm giỏ hàng
         const updateCartCount = () => {
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const cart = getCart();
             const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
             setCartCount(totalItems);
         };
@@ -108,6 +109,8 @@ const Header = () => {
         localStorage.removeItem('user');
         setIsLoggedIn(false);
         setShowUserMenu(false);
+        // Cập nhật lại số đếm giỏ hàng về 0 sau khi đăng xuất
+        window.dispatchEvent(new Event('cartUpdated'));
         navigate('/');
     };
 

@@ -1,24 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { isLoggedIn, getCart, clearCart } from '../../utils/cartUtils';
 
 const Checkout = () => {
     const navigate = useNavigate();
     const [cartItems, setCartItems] = useState([]);
     const [user, setUser] = useState(null);
     const [notes, setNotes] = useState('');
+    
+    // Thêm các state bắt buộc cho Checkout Validation
+    const [fullName, setFullName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [address, setAddress] = useState('');
+    
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
-        // Lấy giỏ hàng
-        const savedCart = localStorage.getItem('cart');
-        if (savedCart) setCartItems(JSON.parse(savedCart));
+        if (!isLoggedIn()) {
+            alert("Vui lòng đăng nhập để thanh toán!");
+            navigate('/login');
+            return;
+        }
+
+        // Lấy giỏ hàng bằng cartUtils
+        const savedCart = getCart();
+        setCartItems(savedCart);
 
         // Lấy thông tin user đăng nhập
         const savedUser = localStorage.getItem('user');
-        if (savedUser) setUser(JSON.parse(savedUser));
+        if (savedUser) {
+            const parsedUser = JSON.parse(savedUser);
+            setUser(parsedUser);
+            // Tự động điền nếu user đã có thông tin
+            if (parsedUser.fullName) setFullName(parsedUser.fullName);
+            if (parsedUser.phone) setPhone(parsedUser.phone);
+            if (parsedUser.address) setAddress(parsedUser.address);
+        }
     }, []);
 
     const calculateTotal = () => cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -36,6 +56,20 @@ const Checkout = () => {
             return;
         }
 
+        // BẮT LỖI FORM ĐỂ ĐÁP ỨNG TIÊU CHÍ 29
+        if (!fullName.trim()) {
+            setErrorMsg("Vui lòng nhập Họ và tên người nhận hàng.");
+            return;
+        }
+        if (!phone.trim()) {
+            setErrorMsg("Vui lòng nhập Số điện thoại liên hệ.");
+            return;
+        }
+        if (!address.trim()) {
+            setErrorMsg("Vui lòng nhập Địa chỉ nhận hàng.");
+            return;
+        }
+
         setIsSubmitting(true);
         setErrorMsg('');
 
@@ -43,6 +77,9 @@ const Checkout = () => {
             // DTO Payload (Cần map chính xác với Backend)
             const payload = {
                 customerId: user.id, // Lấy ID của User đã đăng nhập làm CustomerId
+                fullName: fullName,
+                phone: phone,
+                address: address,
                 notes: notes,
                 orderDetails: cartItems.map(item => ({
                     productId: item.id,
@@ -54,8 +91,7 @@ const Checkout = () => {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/orders`, payload);
 
             // Xóa giỏ hàng sau khi thành công
-            localStorage.removeItem('cart');
-            window.dispatchEvent(new Event('cartUpdated'));
+            clearCart();
             setCartItems([]);
             setSuccess(true);
 
@@ -142,6 +178,44 @@ const Checkout = () => {
                                     Bạn đang ở chế độ khách. Hệ thống yêu cầu đăng nhập để liên kết đơn hàng.
                                 </div>
                             )}
+
+                            {/* FORM NHẬP THÔNG TIN BẮT BUỘC (FullName, Phone, Address) */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Họ và tên <span className="text-red-500">*</span></label>
+                                    <input 
+                                        type="text"
+                                        required
+                                        className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] outline-none transition-all"
+                                        placeholder="Nhập họ tên người nhận"
+                                        value={fullName}
+                                        onChange={(e) => setFullName(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Số điện thoại <span className="text-red-500">*</span></label>
+                                    <input 
+                                        type="text"
+                                        required
+                                        className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] outline-none transition-all"
+                                        placeholder="Nhập số điện thoại liên hệ"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Địa chỉ giao hàng <span className="text-red-500">*</span></label>
+                                <input 
+                                    type="text"
+                                    required
+                                    className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#ea580c] focus:ring-1 focus:ring-[#ea580c] outline-none transition-all"
+                                    placeholder="Ví dụ: Số nhà, Đường, Quận/Huyện, Tỉnh/Thành phố..."
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                />
+                            </div>
 
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 mb-2">Ghi chú đơn hàng (Tùy chọn)</label>

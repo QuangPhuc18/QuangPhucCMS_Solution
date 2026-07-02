@@ -1,9 +1,7 @@
 import axiosClient from '../api/axiosClient';
 
 const productService = {
-    // Hàm gọi API lấy toàn bộ danh sách quần áo, váy dạ hội, điện thoại...
     getAllProducts: (params) => {
-        // 🔥 ĐÃ SỬA: Chữ thường '/products' để khớp chính xác định tuyến Backend của em
         const url = '/products';
         return axiosClient.get(url, { params });
     },

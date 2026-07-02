@@ -11,6 +11,10 @@ const ProductDetail = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Toast báo lỗi số lượng
+    const [showErrorToast, setShowErrorToast] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+
     useEffect(() => {
         // Cuộn lên đầu trang mỗi khi vào một sản phẩm mới
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -55,7 +59,8 @@ const ProductDetail = () => {
                 name: item.name,
                 price: item.price,
                 imageUrl: item.imageUrl,
-                quantity: 1
+                quantity: 1,
+                stockQuantity: item.stockQuantity // Lưu thêm stockQuantity để check bên trang giỏ hàng
             });
         }
         saveCart(currentCart);
@@ -63,6 +68,17 @@ const ProductDetail = () => {
     };
 
     const handleBuyNow = (item) => {
+        const currentCart = getCart();
+        const existingItemIndex = currentCart.findIndex(cartItem => cartItem.id === item.id);
+        const currentQty = existingItemIndex !== -1 ? currentCart[existingItemIndex].quantity : 0;
+
+        if (currentQty + 1 > item.stockQuantity) {
+            setErrorMessage(`Sản phẩm "${item.name}" chỉ còn ${item.stockQuantity} cái trong kho!`);
+            setShowErrorToast(true);
+            setTimeout(() => setShowErrorToast(false), 4000);
+            return;
+        }
+
         handleAddToCart(item);
         navigate('/cart');
     };
@@ -107,12 +123,12 @@ const ProductDetail = () => {
                     <button className="px-lg py-sm font-label-md text-label-md text-[#ea580c] border-b-2 border-[#ea580c] whitespace-nowrap">
                         Mô tả sản phẩm
                     </button>
-                    <button className="px-lg py-sm font-label-md text-label-md text-slate-500 hover:text-slate-900 transition-colors whitespace-nowrap">
-                        Thông số kỹ thuật
-                    </button>
-                    <button className="px-lg py-sm font-label-md text-label-md text-slate-500 hover:text-slate-900 transition-colors whitespace-nowrap">
-                        Đánh giá
-                    </button>
+                    {/*<button className="px-lg py-sm font-label-md text-label-md text-slate-500 hover:text-slate-900 transition-colors whitespace-nowrap">*/}
+                    {/*    Thông số kỹ thuật*/}
+                    {/*</button>*/}
+                    {/*<button className="px-lg py-sm font-label-md text-label-md text-slate-500 hover:text-slate-900 transition-colors whitespace-nowrap">*/}
+                    {/*    Đánh giá*/}
+                    {/*</button>*/}
                 </div>
 
                 <div className="bg-white p-lg rounded-2xl border border-slate-100 shadow-sm text-slate-700 text-body-md font-body-md">
@@ -189,6 +205,20 @@ const ProductDetail = () => {
                     </div>
                 </div>
             )}
+            
+            {/* TOAST BÁO LỖI SỐ LƯỢNG KHI MUA NGAY */}
+            <div className={`fixed top-24 right-5 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-2xl shadow-[0px_8px_32px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center gap-3 transition-all duration-500 transform ${showErrorToast ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0 pointer-events-none'}`}>
+                <div className="bg-red-100 text-red-600 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[20px] font-bold">warning</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-sm font-bold text-slate-900">Không đủ số lượng!</span>
+                    <span className="text-[12px] text-slate-500 max-w-[250px]">{errorMessage}</span>
+                </div>
+                <button onClick={() => setShowErrorToast(false)} className="text-slate-400 hover:text-slate-600 ml-2 transition-colors p-1">
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
         </div>
     );
 };

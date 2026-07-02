@@ -1,4 +1,4 @@
-﻿@model CMS_DATA.Entities.Customer
+@model CMS_DATA.Entities.Customer
 
 @{
     ViewData["Title"] = "Cập Nhật Khách Hàng";
@@ -16,6 +16,7 @@
                         <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
 
                         <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="Password" />
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -30,14 +31,9 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-12 mb-3">
                                 <label asp-for="Email" class="form-label fw-bold">Địa chỉ Email</label>
                                 <input asp-for="Email" type="email" class="form-control" />
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Password" class="form-label fw-bold">Mật khẩu</label>
-                                <input asp-for="Password" type="text" class="form-control" />
                             </div>
                         </div>
 

@@ -1,60 +1,158 @@
-﻿@model CMS_DATA.Entities.Order
+@model CMS_DATA.Entities.Order
 
 @{
     ViewData["Title"] = "Cập Nhật Đơn Hàng";
 }
 
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-warning text-dark py-3">
-                    <h5 class="mb-0 text-uppercase fw-bold"><i class="bi bi-gear-fill"></i> Cập Nhật Đơn Hàng #@Model.Id</h5>
+        <div class="col-lg-12">
+            <div class="mb-3">
+                <a asp-action="Index" class="btn btn-light border shadow-sm">
+                    &larr; Quay lại danh sách
+                </a>
+            </div>
+
+            <form asp-action="Edit" method="post" id="editOrderForm">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="OrderDate" />
+                <input type="hidden" asp-for="CustomerId" />
+                
+                <div class="row">
+                    <!-- CỘT TRÁI: HIỂN THỊ CHI TIẾT ĐƠN HÀNG NHƯ TRANG DETAILS -->
+                <div class="col-md-7">
+                    <div class="card shadow border-0 rounded-3 mb-4 h-100">
+                        <div class="card-header bg-dark text-white p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h4 class="mb-0 text-uppercase fw-bold"><i class="bi bi-receipt"></i> Thông tin Hóa Đơn #@Model.Id</h4>
+                                <p class="mb-0 text-light mt-1">Ngày đặt: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <div class="mb-4">
+                                <h6 class="text-muted text-uppercase fw-bold mb-3">Thông tin người mua:</h6>
+                                @if (Model.Customer != null)
+                                {
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold text-muted mb-1">Họ Tên</label>
+                                        <input type="text" name="CustomerFullName" class="form-control form-control-sm" value="@Model.Customer.FullName" required />
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold text-muted mb-1">Email</label>
+                                        <input type="email" name="CustomerEmail" class="form-control form-control-sm" value="@Model.Customer.Email" required />
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold text-muted mb-1">Số điện thoại</label>
+                                        <input type="text" name="CustomerPhone" class="form-control form-control-sm" value="@Model.Customer.Phone" />
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold text-muted mb-1">Địa chỉ</label>
+                                        <input type="text" name="CustomerAddress" class="form-control form-control-sm" value="@Model.Customer.Address" />
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="table-responsive mb-4">
+                                <table class="table table-bordered align-middle table-sm">
+                                    <thead class="table-light text-center fw-bold">
+                                        <tr>
+                                            <th style="width: 40px;">STT</th>
+                                            <th class="text-start">Tên Sản Phẩm</th>
+                                            <th style="width: 100px;">Đơn Giá</th>
+                                            <th style="width: 90px;">SL</th>
+                                            <th style="width: 120px;">Thành Tiền</th>
+                                            <th style="width: 60px;">Xóa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{ decimal grandTotal = 0; }
+                                        @if (Model.OrderDetails != null && Model.OrderDetails.Any())
+                                        {
+                                            int stt = 1;
+                                            foreach (var detail in Model.OrderDetails)
+                                            {
+                                                decimal lineTotal = (detail.Quantity * detail.UnitPrice);
+                                                grandTotal += lineTotal;
+
+                                                <tr>
+                                                    <td class="text-center align-middle">@stt</td>
+                                                    <td class="fw-bold align-middle">
+                                                        @(detail.Product != null ? detail.Product.Name : "Sản phẩm không xác định")
+                                                        <input type="hidden" name="DetailIds" value="@detail.Id" />
+                                                    </td>
+                                                    <td class="text-end align-middle">@detail.UnitPrice.ToString("#,##0") đ</td>
+                                                    <td class="text-center align-middle">
+                                                        <input type="number" name="DetailQuantities" class="form-control form-control-sm text-center" value="@detail.Quantity" min="1" required />
+                                                    </td>
+                                                    <td class="text-end fw-bold text-danger align-middle">@lineTotal.ToString("#,##0") đ</td>
+                                                    <td class="text-center align-middle">
+                                                        <div class="form-check d-flex justify-content-center">
+                                                            <input class="form-check-input border-danger" type="checkbox" name="DeletedDetailIds" value="@detail.Id">
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                stt++;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="6" class="text-center py-3">Lỗi: Không tìm thấy chi tiết sản phẩm.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="row justify-content-end">
+                                <div class="col-md-7">
+                                    <table class="table table-borderless table-sm fs-5">
+                                        <tr class="border-top border-dark border-2">
+                                            <td class="text-end fw-bold">TỔNG CỘNG:</td>
+                                            <td class="text-end fw-bold text-danger fs-5">@grandTotal.ToString("#,##0") đ</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body p-4">
-                    <form asp-action="Edit" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                        <input type="hidden" asp-for="Id" />
-                        <input type="hidden" asp-for="OrderDate" />
-                        <input type="hidden" asp-for="CustomerId" />
-
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-muted">Ngày Đặt Hàng</label>
-                                <input class="form-control bg-light" value="@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")" readonly />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold text-muted">Mã Khách Hàng</label>
-                                <input class="form-control bg-light" value="#@Model.CustomerId" readonly />
-                            </div>
+                <!-- CỘT PHẢI: FORM CHỈNH SỬA TRẠNG THÁI -->
+                <div class="col-md-5">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-warning text-dark py-3">
+                            <h5 class="mb-0 text-uppercase fw-bold"><i class="bi bi-gear-fill"></i> Cập Nhật Đơn Hàng</h5>
                         </div>
+                        <div class="card-body p-4">
+                                <div class="mb-4">
+                                    <label asp-for="Status" class="form-label fw-bold text-danger fs-5">Trạng Thái Đơn Hàng</label>
+                                    <select asp-for="Status" class="form-select form-select-lg border-warning shadow-sm">
+                                        <option value="0">Chờ duyệt (Mới đặt)</option>
+                                        <option value="1">Đang giao (Đã xuất kho)</option>
+                                        <option value="2">Đã xong (Thành công)</option>
+                                    </select>
+                                    <span asp-validation-for="Status" class="text-danger small"></span>
+                                </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Status" class="form-label fw-bold text-danger fs-5">Trạng Thái Đơn Hàng</label>
-                            <select asp-for="Status" class="form-select form-select-lg border-warning shadow-sm">
-                                <option value="0">Chờ duyệt (Mới đặt)</option>
-                                <option value="1">Đang giao (Đã xuất kho)</option>
-                                <option value="2">Đã xong (Thành công)</option>
-                            </select>
-                            <span asp-validation-for="Status" class="text-danger small"></span>
+                                <div class="mb-4">
+                                    <label asp-for="Notes" class="form-label fw-bold">Ghi chú (Nội bộ)</label>
+                                    <textarea asp-for="Notes" class="form-control" rows="5" placeholder="Ghi chú thêm về vận chuyển..."></textarea>
+                                    <span asp-validation-for="Notes" class="text-danger small"></span>
+                                </div>
+
+                                <hr class="text-muted my-4" />
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="submit" class="btn btn-warning w-100 py-3 fs-5 fw-bold text-dark shadow-sm">LƯU CẬP NHẬT</button>
+                                </div>
                         </div>
-
-                        <div class="mb-4">
-                            <label asp-for="Notes" class="form-label fw-bold">Ghi chú (Nội bộ)</label>
-                            <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Ghi chú thêm về vận chuyển..."></textarea>
-                            <span asp-validation-for="Notes" class="text-danger small"></span>
-                        </div>
-
-                        <hr class="text-muted" />
-
-                        <div class="d-flex justify-content-end gap-2">
-                            <a asp-action="Index" class="btn btn-light border px-4">Hủy bỏ</a>
-                            <button type="submit" class="btn btn-warning px-5 fw-bold text-dark">LƯU TRẠNG THÁI</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
+            </form>
         </div>
     </div>
 </div>

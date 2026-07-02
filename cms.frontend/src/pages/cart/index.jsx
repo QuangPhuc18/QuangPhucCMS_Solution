@@ -21,6 +21,10 @@ const Cart = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
 
+    // Toast báo lỗi số lượng
+    const [showErrorToast, setShowErrorToast] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+
     // Lắng nghe thay đổi của giỏ hàng để lưu vào localStorage
     useEffect(() => {
         // Chỉ lưu nếu đã đăng nhập
@@ -67,6 +71,24 @@ const Cart = () => {
     // Tính tổng tiền
     const calculateTotal = () => {
         return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    };
+
+    // Kiểm tra tồn kho trước khi thanh toán
+    const handleCheckout = (e) => {
+        e.preventDefault();
+        
+        // Kiểm tra từng món trong giỏ hàng xem có vượt quá stockQuantity không
+        for (const item of cartItems) {
+            if (item.stockQuantity !== undefined && item.quantity > item.stockQuantity) {
+                setErrorMessage(`Sản phẩm "${item.name}" chỉ còn ${item.stockQuantity} cái trong kho! Vui lòng giảm số lượng.`);
+                setShowErrorToast(true);
+                setTimeout(() => setShowErrorToast(false), 5000);
+                return; // Chặn luôn
+            }
+        }
+        
+        // Nếu ổn hết thì chuyển hướng sang trang thanh toán
+        navigate('/checkout');
     };
 
     return (
@@ -185,13 +207,13 @@ const Cart = () => {
                                 </div>
                             </div>
 
-                            <Link
-                                to="/checkout"
+                            <button
+                                onClick={handleCheckout}
                                 className="w-full bg-[#b7131a] text-white py-3.5 rounded-xl font-bold hover:bg-red-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-900/10 uppercase tracking-wide"
                             >
                                 Tiến hành thanh toán
                                 <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
-                            </Link>
+                            </button>
 
                             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
                                 <span className="material-symbols-outlined text-[16px] text-green-600">shield</span>
@@ -237,6 +259,20 @@ const Cart = () => {
                         </button>
                     </div>
                 </div>
+            </div>
+
+            {/* TOAST BÁO LỖI SỐ LƯỢNG KHI THANH TOÁN */}
+            <div className={`fixed top-24 right-5 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-2xl shadow-[0px_8px_32px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center gap-3 transition-all duration-500 transform ${showErrorToast ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0 pointer-events-none'}`}>
+                <div className="bg-red-100 text-red-600 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[20px] font-bold">warning</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-sm font-bold text-slate-900">Không đủ số lượng!</span>
+                    <span className="text-[12px] text-slate-500 max-w-[250px]">{errorMessage}</span>
+                </div>
+                <button onClick={() => setShowErrorToast(false)} className="text-slate-400 hover:text-slate-600 ml-2 transition-colors p-1">
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
             </div>
 
         </div>

@@ -1,4 +1,4 @@
-﻿//SinhVien: Lê Quang Phúc
+//SinhVien: Lê Quang Phúc
 //MSSV: 2123110118
 //Lớp: CCQ2311D
 //Mô tả : Controller Quản lý Đơn hàng (Order) và Chi tiết đơn hàng
@@ -95,7 +95,12 @@ namespace CMS.Backend.Controllers
         {
             if (id == null) return NotFound();
 
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                .Include(o => o.Customer)                           // Lấy thông tin người mua
+                .Include(o => o.OrderDetails)                       // Lấy danh sách chi tiết đơn
+                    .ThenInclude(od => od.Product)                  // Từ chi tiết đơn lấy sản phẩm
+                .FirstOrDefaultAsync(m => m.Id == id);
+                
             if (order == null) return NotFound();
 
             ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "FullName", order.CustomerId);
@@ -104,28 +109,83 @@ namespace CMS.Backend.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Order model)
+        public async Task<IActionResult> Edit(int Id, int Status, string Notes,
+            string CustomerFullName, string CustomerEmail, string CustomerPhone, string CustomerAddress,
+            int[] DetailIds, int[] DetailQuantities, int[] DeletedDetailIds)
         {
-            ModelState.Remove("Customer");
-            ModelState.Remove("OrderDetails");
+            var order = await _context.Orders
+                .Include(o => o.Customer)
+                .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                .FirstOrDefaultAsync(o => o.Id == Id);
 
-            if (ModelState.IsValid)
+            if (order == null) return NotFound();
+
+            try
             {
-                try
+                // 1. CẬP NHẬT THÔNG TIN ĐƠN HÀNG
+                order.Status = Status;
+                order.Notes = Notes;
+
+                // 2. CẬP NHẬT THÔNG TIN KHÁCH HÀNG
+                if (order.Customer != null)
                 {
-                    _context.Orders.Update(model);
-                    await _context.SaveChangesAsync();
+                    order.Customer.FullName = CustomerFullName;
+                    order.Customer.Email = CustomerEmail;
+                    order.Customer.Phone = CustomerPhone;
+                    order.Customer.Address = CustomerAddress;
                 }
-                catch (DbUpdateConcurrencyException)
+
+                // 3. CẬP NHẬT CHI TIẾT ĐƠN HÀNG & TỒN KHO
+                if (DetailIds != null && DetailQuantities != null)
                 {
-                    if (!OrderExists(model.Id)) return NotFound();
-                    else throw;
+                    for (int i = 0; i < DetailIds.Length; i++)
+                    {
+                        int detailId = DetailIds[i];
+                        int newQuantity = DetailQuantities[i];
+
+                        var detail = order.OrderDetails.FirstOrDefault(d => d.Id == detailId);
+                        if (detail != null)
+                        {
+                            // A. Nếu Checkbox XÓA được tích
+                            if (DeletedDetailIds != null && DeletedDetailIds.Contains(detailId))
+                            {
+                                // Hoàn trả tồn kho
+                                if (detail.Product != null)
+                                {
+                                    detail.Product.StockQuantity += detail.Quantity;
+                                }
+                                _context.OrderDetails.Remove(detail);
+                            }
+                            // B. Nếu chỉ thay đổi SỐ LƯỢNG
+                            else
+                            {
+                                if (detail.Quantity != newQuantity)
+                                {
+                                    int diff = newQuantity - detail.Quantity;
+                                    
+                                    // diff > 0 (Tăng SL mua) -> Trừ kho
+                                    // diff < 0 (Giảm SL mua) -> Cộng kho
+                                    if (detail.Product != null)
+                                    {
+                                        detail.Product.StockQuantity -= diff;
+                                    }
+                                    
+                                    detail.Quantity = newQuantity;
+                                }
+                            }
+                        }
+                    }
                 }
+
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-
-            ViewData["CustomerId"] = new SelectList(_context.Customers, "Id", "FullName", model.CustomerId);
-            return View(model);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!OrderExists(Id)) return NotFound();
+                else throw;
+            }
         }
 
         // ==========================================

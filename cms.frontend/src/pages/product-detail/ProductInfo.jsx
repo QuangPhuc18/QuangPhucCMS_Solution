@@ -135,6 +135,10 @@ const ProductInfo = ({ product }) => {
 
     // 🔥 1. State quản lý việc hiển thị thông báo (Toast Alert)
     const [showToast, setShowToast] = useState(false);
+    
+    // Toast báo lỗi số lượng
+    const [showErrorToast, setShowErrorToast] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const handleDecrease = () => {
         if (quantity > 1) setQuantity(quantity - 1);
@@ -168,7 +172,8 @@ const ProductInfo = ({ product }) => {
                 name: product.name,
                 price: product.price,
                 imageUrl: product.imageUrl, // Lấy luôn đường dẫn ảnh để qua trang kia hiện
-                quantity: quantity
+                quantity: quantity,
+                stockQuantity: product.stockQuantity // Lưu lại tồn kho cho Cart kiểm tra sau này
             });
         }
 
@@ -195,6 +200,20 @@ const ProductInfo = ({ product }) => {
                     <span className="text-[12px] text-slate-400">Đã thêm {quantity} sản phẩm vào giỏ hàng.</span>
                 </div>
                 <button onClick={() => setShowToast(false)} className="text-slate-400 hover:text-white ml-2 transition-colors">
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+
+            {/* TOAST BÁO LỖI SỐ LƯỢNG KHI MUA NGAY */}
+            <div className={`fixed top-24 right-5 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-2xl shadow-[0px_8px_32px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center gap-3 transition-all duration-500 transform ${showErrorToast ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0 pointer-events-none'}`}>
+                <div className="bg-red-100 text-red-600 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[20px] font-bold">warning</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-sm font-bold text-slate-900">Không đủ số lượng!</span>
+                    <span className="text-[12px] text-slate-500 max-w-[250px]">{errorMessage}</span>
+                </div>
+                <button onClick={() => setShowErrorToast(false)} className="text-slate-400 hover:text-slate-600 ml-2 transition-colors p-1">
                     <span className="material-symbols-outlined text-[18px]">close</span>
                 </button>
             </div>
@@ -270,8 +289,25 @@ const ProductInfo = ({ product }) => {
                 <div className="flex flex-col sm:flex-row gap-md mb-xl">
                     <button 
                         onClick={() => {
+                            if (!isLoggedIn()) {
+                                alert("Vui lòng đăng nhập để mua hàng!");
+                                navigate('/login');
+                                return;
+                            }
+                            
+                            const currentCart = getCart();
+                            const existingItemIndex = currentCart.findIndex(item => item.id === product.id);
+                            const currentQty = existingItemIndex !== -1 ? currentCart[existingItemIndex].quantity : 0;
+
+                            if (currentQty + quantity > product.stockQuantity) {
+                                setErrorMessage(`Sản phẩm "${product.name}" chỉ còn ${product.stockQuantity} cái trong kho! Bạn đang cố mua tổng cộng ${currentQty + quantity} cái.`);
+                                setShowErrorToast(true);
+                                setTimeout(() => setShowErrorToast(false), 4000);
+                                return;
+                            }
+                            
                             handleAddToCart();
-                            if (isLoggedIn()) navigate('/checkout');
+                            navigate('/checkout');
                         }}
                         className="flex-1 bg-primary text-on-primary font-label-md text-label-md py-md rounded-lg hover:bg-on-primary-fixed-variant transition-colors shadow-sm"
                     >

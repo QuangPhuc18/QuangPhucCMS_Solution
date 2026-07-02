@@ -1,0 +1,65 @@
+@model CMS_DATA.Entities.Order
+
+@{
+    ViewData["Title"] = "Tạo Đơn Hàng Mới";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 text-uppercase fw-bold"><i class="bi bi-cart-plus-fill"></i> Tạo Đơn Hàng Mới</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="CustomerId" class="form-label fw-bold">Khách Hàng</label>
+                            <select asp-for="CustomerId" class="form-select border-primary" asp-items="ViewBag.CustomerId">
+                                <option value="">-- Chọn khách hàng --</option>
+                            </select>
+                            <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="OrderDate" class="form-label fw-bold">Ngày Đặt Hàng</label>
+                            <input asp-for="OrderDate" class="form-control" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                            <span asp-validation-for="OrderDate" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Status" class="form-label fw-bold">Trạng Thái Đơn Hàng</label>
+                            <select asp-for="Status" class="form-select border-primary">
+                                <option value="0">Chờ duyệt (Mới đặt)</option>
+                                <option value="1">Đang giao (Đã xuất kho)</option>
+                                <option value="2">Đã xong (Thành công)</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Notes" class="form-label fw-bold">Ghi chú (Tùy chọn)</label>
+                            <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Ghi chú thêm về đơn hàng..."></textarea>
+                            <span asp-validation-for="Notes" class="text-danger small"></span>
+                        </div>
+
+                        <hr class="text-muted" />
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-light border px-4">Hủy bỏ</a>
+                            <button type="submit" class="btn btn-primary px-5 fw-bold text-white">TẠO ĐƠN HÀNG</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

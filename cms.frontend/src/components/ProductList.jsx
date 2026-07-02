@@ -21,8 +21,16 @@ const ProductList = () => {
     // Input cho giá (hiển thị giao diện, khi bấm Áp dụng mới đưa vào filterParams)
     const [priceInput, setPriceInput] = useState({ min: '', max: '' });
 
+    // Quản lý trạng thái đóng/mở của bộ lọc (Accordion)
+    const [isCategoryOpen, setIsCategoryOpen] = useState(true);
+    const [isBrandOpen, setIsBrandOpen] = useState(true);
+
     // Quản lý trạng thái ẩn/hiện Toast thông báo tự custom
     const [showToast, setShowToast] = useState(false);
+    
+    // Toast báo lỗi số lượng
+    const [showErrorToast, setShowErrorToast] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     // Kích hoạt hook điều hướng bằng mã độc lập của react-router-dom
     const navigate = useNavigate();
@@ -112,7 +120,8 @@ const ProductList = () => {
                 name: product.name,
                 price: product.price,
                 imageUrl: product.imageUrl,
-                quantity: 1
+                quantity: 1,
+                stockQuantity: product.stockQuantity // Lưu luôn tồn kho vào giỏ để Cart kiểm tra
             });
         }
 
@@ -125,6 +134,17 @@ const ProductList = () => {
 
     // Xử lý nút Mua ngay
     const handleBuyNow = (product) => {
+        const currentCart = getCart();
+        const existingItemIndex = currentCart.findIndex(item => item.id === product.id);
+        const currentQty = existingItemIndex !== -1 ? currentCart[existingItemIndex].quantity : 0;
+
+        if (currentQty + 1 > product.stockQuantity) {
+            setErrorMessage(`Sản phẩm "${product.name}" chỉ còn ${product.stockQuantity} cái trong kho!`);
+            setShowErrorToast(true);
+            setTimeout(() => setShowErrorToast(false), 4000);
+            return;
+        }
+
         handleAddToCart(product);
         navigate('/cart');
     };
@@ -133,34 +153,7 @@ const ProductList = () => {
         <section className="max-w-7xl mx-auto px-4 py-8 relative">
             
             {/* KHU VỰC THANH LỌC DANH MỤC SẢN PHẨM (CHỈ HIỆN Ở TRANG CHỦ) */}
-            {!isShopPage && (
-                <div className="mb-10">
-                    <div className="flex items-center gap-3 overflow-x-auto hide-scroll pb-2">
-                        <Link
-                            to="/shop"
-                            className={`px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 border ${!categoryId
-                                ? 'bg-orange-600 text-white border-orange-600 shadow-md'
-                                : 'bg-white text-slate-600 border-slate-200 hover:border-orange-500 hover:text-orange-600'
-                                }`}
-                        >
-                            Tất cả sản phẩm
-                        </Link>
-
-                        {categories.map((cat) => (
-                            <Link
-                                key={cat.id}
-                                to={`/shop/category/${cat.id}`}
-                                className={`px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 border ${Number(categoryId) === cat.id
-                                    ? 'bg-orange-600 text-white border-orange-600 shadow-md'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:border-orange-500 hover:text-orange-600'
-                                    }`}
-                            >
-                                {cat.name}
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-            )}
+            {/* Đã tách CategoryMenu ra Component riêng */}
 
             <div className={`flex flex-col ${isShopPage ? 'md:flex-row gap-8' : 'gap-0'}`}>
                 {/* 🛒 SIDEBAR BỘ LỌC BÊN TRÁI (25%) */}
@@ -174,8 +167,11 @@ const ProductList = () => {
 
                         {/* 1. LỌC THEO DANH MỤC */}
                         <div className="mb-6 pb-6 border-b border-slate-100">
-                            <h4 className="font-bold text-slate-700 mb-3 text-sm tracking-wide uppercase">Danh mục</h4>
-                            <div className="space-y-2.5">
+                            <div className="flex items-center justify-between mb-3 cursor-pointer select-none" onClick={() => setIsCategoryOpen(!isCategoryOpen)}>
+                                <h4 className="font-bold text-slate-700 text-sm tracking-wide uppercase">Danh mục</h4>
+                                <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${isCategoryOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                            </div>
+                            <div className={`space-y-2.5 overflow-hidden transition-all duration-300 ${isCategoryOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
                                 <Link 
                                     to="/shop" 
                                     className={`flex items-center gap-2 text-sm transition-colors ${!categoryId ? 'text-[#b7131a] font-bold' : 'text-slate-600 hover:text-[#b7131a]'}`}
@@ -198,8 +194,11 @@ const ProductList = () => {
 
                         {/* 2. LỌC THEO THƯƠNG HIỆU */}
                         <div className="mb-6 pb-6 border-b border-slate-100">
-                            <h4 className="font-bold text-slate-700 mb-3 text-sm tracking-wide uppercase">Thương hiệu</h4>
-                            <div className="space-y-2.5 max-h-[200px] overflow-y-auto custom-scrollbar">
+                            <div className="flex items-center justify-between mb-3 cursor-pointer select-none" onClick={() => setIsBrandOpen(!isBrandOpen)}>
+                                <h4 className="font-bold text-slate-700 text-sm tracking-wide uppercase">Thương hiệu</h4>
+                                <span className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${isBrandOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                            </div>
+                            <div className={`space-y-2.5 overflow-y-auto custom-scrollbar transition-all duration-300 ${isBrandOpen ? 'max-h-[250px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
                                 <label className="flex items-center gap-2.5 cursor-pointer">
                                     <input 
                                         type="radio" 
@@ -226,31 +225,67 @@ const ProductList = () => {
                         </div>
 
                         {/* 3. LỌC THEO GIÁ MIN - MAX */}
-                        <div>
-                            <h4 className="font-bold text-slate-700 mb-3 text-sm tracking-wide uppercase">Khoảng giá (VNĐ)</h4>
-                            <div className="flex items-center gap-2 mb-4">
-                                <input 
-                                    type="number" 
-                                    placeholder="Từ giá" 
-                                    className="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl outline-none focus:border-[#b7131a] focus:ring-1 focus:ring-[#b7131a] bg-slate-50 transition-all" 
-                                    value={priceInput.min} 
-                                    onChange={e => setPriceInput({...priceInput, min: e.target.value})} 
-                                />
-                                <span className="text-slate-400 font-medium">-</span>
-                                <input 
-                                    type="number" 
-                                    placeholder="Đến giá" 
-                                    className="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl outline-none focus:border-[#b7131a] focus:ring-1 focus:ring-[#b7131a] bg-slate-50 transition-all" 
-                                    value={priceInput.max} 
-                                    onChange={e => setPriceInput({...priceInput, max: e.target.value})} 
-                                />
+                        <div className="mb-6 pb-6">
+                            <h4 className="font-bold text-slate-700 mb-3 text-sm tracking-wide uppercase">Khoảng giá</h4>
+                            <div className="space-y-2.5">
+                                <label className="flex items-center gap-2.5 cursor-pointer">
+                                    <input 
+                                        type="radio" 
+                                        name="priceRange" 
+                                        checked={filterParams.minPrice === '' && filterParams.maxPrice === ''} 
+                                        onChange={() => setFilterParams({...filterParams, minPrice: '', maxPrice: ''})} 
+                                        className="w-4 h-4 text-[#b7131a] focus:ring-[#b7131a] border-slate-300 cursor-pointer" 
+                                    />
+                                    <span className="text-sm text-slate-700 font-medium">Tất cả mức giá</span>
+                                </label>
+                                <label className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 rounded px-1 transition-colors">
+                                    <input 
+                                        type="radio" 
+                                        name="priceRange" 
+                                        checked={filterParams.minPrice === '' && filterParams.maxPrice === '5000000'} 
+                                        onChange={() => setFilterParams({...filterParams, minPrice: '', maxPrice: '5000000'})} 
+                                        className="w-4 h-4 text-[#b7131a] focus:ring-[#b7131a] border-slate-300 cursor-pointer" 
+                                    />
+                                    <span className="text-sm text-slate-600">Dưới 5 triệu</span>
+                                </label>
+                                <label className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 rounded px-1 transition-colors">
+                                    <input 
+                                        type="radio" 
+                                        name="priceRange" 
+                                        checked={filterParams.minPrice === '5000000' && filterParams.maxPrice === '10000000'} 
+                                        onChange={() => setFilterParams({...filterParams, minPrice: '5000000', maxPrice: '10000000'})} 
+                                        className="w-4 h-4 text-[#b7131a] focus:ring-[#b7131a] border-slate-300 cursor-pointer" 
+                                    />
+                                    <span className="text-sm text-slate-600">Từ 5 - 10 triệu</span>
+                                </label>
+                                <label className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 rounded px-1 transition-colors">
+                                    <input 
+                                        type="radio" 
+                                        name="priceRange" 
+                                        checked={filterParams.minPrice === '10000000' && filterParams.maxPrice === '20000000'} 
+                                        onChange={() => setFilterParams({...filterParams, minPrice: '10000000', maxPrice: '20000000'})} 
+                                        className="w-4 h-4 text-[#b7131a] focus:ring-[#b7131a] border-slate-300 cursor-pointer" 
+                                    />
+                                    <span className="text-sm text-slate-600">Từ 10 - 20 triệu</span>
+                                </label>
+                                <label className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 rounded px-1 transition-colors">
+                                    <input 
+                                        type="radio" 
+                                        name="priceRange" 
+                                        checked={filterParams.minPrice === '20000000' && filterParams.maxPrice === ''} 
+                                        onChange={() => setFilterParams({...filterParams, minPrice: '20000000', maxPrice: ''})} 
+                                        className="w-4 h-4 text-[#b7131a] focus:ring-[#b7131a] border-slate-300 cursor-pointer" 
+                                    />
+                                    <span className="text-sm text-slate-600">Trên 20 triệu</span>
+                                </label>
                             </div>
+                            
                             <button 
-                                onClick={handleApplyPrice} 
-                                className="w-full bg-[#b7131a] text-white hover:bg-red-800 text-sm font-bold py-2.5 rounded-xl transition-all shadow-md shadow-red-900/10 flex justify-center items-center gap-1 uppercase tracking-wide"
+                                onClick={() => window.scrollTo({ top: 300, behavior: 'smooth' })}
+                                className="w-full mt-6 bg-[#b7131a] text-white hover:bg-red-800 text-sm font-bold py-2.5 rounded-xl transition-all shadow-md shadow-red-900/10 flex justify-center items-center gap-1 uppercase tracking-wide"
                             >
                                 <span className="material-symbols-outlined text-[18px]">tune</span>
-                                Áp dụng bộ lọc
+                                Áp dụng
                             </button>
                         </div>
                     </div>
@@ -401,7 +436,7 @@ const ProductList = () => {
                 </div>
             </div>
 
-            {/* TOAST THÔNG BÁO CUSTOM */}
+            {/* TOAST THÔNG BÁO CUSTOM THÀNH CÔNG */}
             <div className={`fixed top-24 right-5 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-2xl shadow-[0px_8px_32px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center gap-3 transition-all duration-500 transform ${showToast ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0 pointer-events-none'}`}>
                 <div className="bg-green-100 text-green-600 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[20px] font-bold">check</span>
@@ -411,6 +446,20 @@ const ProductList = () => {
                     <span className="text-[12px] text-slate-500">Giỏ hàng của bạn đã được cập nhật.</span>
                 </div>
                 <button onClick={() => setShowToast(false)} className="text-slate-400 hover:text-slate-600 ml-2 transition-colors p-1">
+                    <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+
+            {/* TOAST BÁO LỖI SỐ LƯỢNG KHI MUA NGAY */}
+            <div className={`fixed top-24 right-5 z-50 bg-white text-slate-800 px-5 py-3.5 rounded-2xl shadow-[0px_8px_32px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center gap-3 transition-all duration-500 transform ${showErrorToast ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0 pointer-events-none'}`}>
+                <div className="bg-red-100 text-red-600 rounded-full w-10 h-10 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-[20px] font-bold">warning</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-sm font-bold text-slate-900">Không đủ số lượng!</span>
+                    <span className="text-[12px] text-slate-500 max-w-[250px]">{errorMessage}</span>
+                </div>
+                <button onClick={() => setShowErrorToast(false)} className="text-slate-400 hover:text-slate-600 ml-2 transition-colors p-1">
                     <span className="material-symbols-outlined text-[18px]">close</span>
                 </button>
             </div>

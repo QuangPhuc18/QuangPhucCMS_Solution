@@ -42,12 +42,6 @@ const ProductDetail = () => {
     }, [id]);
 
     const handleAddToCart = (item) => {
-        if (!isLoggedIn()) {
-            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
-            navigate('/login');
-            return;
-        }
-        
         const currentCart = getCart();
         const existingItemIndex = currentCart.findIndex(cartItem => cartItem.id === item.id);
 

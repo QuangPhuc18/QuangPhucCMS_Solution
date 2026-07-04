@@ -1,4 +1,4 @@
-﻿@model CMS_DATA.Entities.CategoryProduct
+@model CMS_DATA.Entities.CategoryProduct
 
 @{
     ViewData["Title"] = "Cập Nhật Danh Mục";
@@ -13,9 +13,10 @@
                     <h5 class="mb-0 text-uppercase fw-bold"><i class="bi bi-pencil-square"></i> Cập Nhật Danh Mục #@Model.Id</h5>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Edit" method="post">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
                         <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="ImageUrl" />
 
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label fw-bold">Tên Danh Mục <span class="text-danger">*</span></label>
@@ -27,6 +28,19 @@
                             <label asp-for="Description" class="form-label fw-bold">Mô tả chi tiết</label>
                             <textarea asp-for="Description" class="form-control" rows="4"></textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Ảnh đại diện mới</label>
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <div class="mb-2">
+                                    <img src="@Model.ImageUrl" alt="Current Image" class="img-thumbnail" style="height: 100px;" />
+                                    <small class="d-block text-muted">Ảnh hiện tại</small>
+                                </div>
+                            }
+                            <input type="file" name="image" class="form-control border-warning shadow-sm" accept="image/*" />
+                            <small class="text-muted">Chọn ảnh mới nếu muốn thay đổi. Nếu không chọn sẽ giữ ảnh cũ.</small>
                         </div>
 
                         <hr class="text-muted" />

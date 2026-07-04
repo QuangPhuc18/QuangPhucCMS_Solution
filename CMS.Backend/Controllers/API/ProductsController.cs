@@ -47,6 +47,41 @@ namespace CMS.Backend.Controllers.Api
             return await query.OrderByDescending(p => p.Id).ToListAsync();
         }
 
+        [HttpGet("newest")]
+        public async Task<ActionResult<IEnumerable<Product>>> GetNewestProducts()
+        {
+            var products = await _context.Products
+                .Include(p => p.CategoryProduct)
+                .Include(p => p.Brand)
+                .OrderByDescending(p => p.Id)
+                .Take(3)
+                .ToListAsync();
+
+            return Ok(products);
+        }
+
+        [HttpGet("hot")]
+        public async Task<IActionResult> GetHotProducts()
+        {
+            var products = await _context.Products
+                .Include(p => p.CategoryProduct)
+                .Include(p => p.Brand)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Name,
+                    p.Price,
+                    p.ImageUrl,
+                    Brand = p.Brand,
+                    SoldQuantity = p.OrderDetails.Sum(od => od.Quantity)
+                })
+                .OrderByDescending(p => p.SoldQuantity)
+                .Take(3)
+                .ToListAsync();
+
+            return Ok(products);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {

@@ -11,10 +11,7 @@ const Cart = () => {
     });
 
     useEffect(() => {
-        if (!isLoggedIn()) {
-            alert("Vui lòng đăng nhập để xem giỏ hàng của bạn!");
-            navigate('/login');
-        }
+        // Có thể để trống hoặc thêm logic khác sau này
     }, [navigate]);
 
     // 🔥 2. State quản lý Modal xác nhận xóa custom
@@ -27,10 +24,7 @@ const Cart = () => {
 
     // Lắng nghe thay đổi của giỏ hàng để lưu vào localStorage
     useEffect(() => {
-        // Chỉ lưu nếu đã đăng nhập
-        if (isLoggedIn()) {
-            saveCart(cartItems);
-        }
+        saveCart(cartItems);
     }, [cartItems]);
 
     // Xử lý Tăng số lượng
@@ -44,6 +38,33 @@ const Cart = () => {
     const handleDecrease = (id) => {
         setCartItems(cartItems.map(item =>
             item.id === id && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
+        ));
+    };
+
+    // Xử lý khi nhập số lượng trực tiếp
+    const handleQuantityChange = (id, value) => {
+        let val = parseInt(value, 10);
+        if (isNaN(val)) val = "";
+        
+        setCartItems(cartItems.map(item => 
+            item.id === id ? { ...item, quantity: val } : item
+        ));
+    };
+
+    // Khi người dùng click ra ngoài input (blur)
+    const handleQuantityBlur = (id, value, stockQuantity) => {
+        let val = parseInt(value, 10);
+        if (isNaN(val) || val < 1) val = 1;
+        
+        if (stockQuantity !== undefined && val > stockQuantity) {
+            val = stockQuantity;
+            setErrorMessage(`Sản phẩm chỉ còn ${stockQuantity} cái trong kho!`);
+            setShowErrorToast(true);
+            setTimeout(() => setShowErrorToast(false), 4000);
+        }
+        
+        setCartItems(cartItems.map(item =>
+            item.id === id ? { ...item, quantity: val } : item
         ));
     };
 
@@ -162,9 +183,14 @@ const Cart = () => {
                                 <div className="col-span-1 md:col-span-2 flex justify-start md:justify-center">
                                     <div className="flex items-center border border-slate-200 rounded-lg w-max bg-slate-50">
                                         <button onClick={() => handleDecrease(item.id)} className="px-3 py-1.5 text-slate-600 hover:bg-slate-200 transition-colors rounded-l-lg">-</button>
-                                        <span className="px-3 py-1.5 text-sm font-semibold border-l border-r border-slate-200 w-10 text-center bg-white">
-                                            {item.quantity}
-                                        </span>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={item.quantity === "" ? "" : item.quantity}
+                                            onChange={(e) => handleQuantityChange(item.id, e.target.value)}
+                                            onBlur={(e) => handleQuantityBlur(item.id, e.target.value, item.stockQuantity)}
+                                            className="px-1 py-1.5 text-sm font-semibold border-l border-r border-slate-200 w-12 text-center bg-white outline-none focus:bg-slate-50 [-moz-appearance:_textfield] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none"
+                                        />
                                         <button onClick={() => handleIncrease(item.id)} className="px-3 py-1.5 text-slate-600 hover:bg-slate-200 transition-colors rounded-r-lg">+</button>
                                     </div>
                                 </div>

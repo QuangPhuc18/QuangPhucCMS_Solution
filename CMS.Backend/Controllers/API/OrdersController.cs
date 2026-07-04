@@ -159,7 +159,7 @@ namespace CMS.Backend.Controllers.Api
                 // 4. 🔥 GỬI EMAIL XÁC NHẬN ĐƠN HÀNG (Tiêu chí 31)
                 string emailBody = $@"
                     <div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
-                        <h2 style='color: #ea580c;'>Cảm ơn bạn đã đặt hàng tại Quang Phuc CMS!</h2>
+                        <h2 style='color: #ea580c;'>Cảm ơn bạn đã đặt hàng tại DigiShop!</h2>
                         <p>Chào <b>{customer.FullName}</b>,</p>
                         <p>Đơn hàng <b>#{order.Id}</b> của bạn đã được ghi nhận hệ thống thành công.</p>
                         <p>Chúng tôi sẽ giao hàng đến địa chỉ: <b>{customer.Address}</b> trong thời gian sớm nhất.</p>

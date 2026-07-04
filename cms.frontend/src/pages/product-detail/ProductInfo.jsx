@@ -145,17 +145,39 @@ const ProductInfo = ({ product }) => {
     };
 
     const handleIncrease = () => {
-        setQuantity(quantity + 1);
+        if (quantity < (product?.stockQuantity || 0)) {
+            setQuantity(quantity + 1);
+        } else {
+            setErrorMessage(`Chỉ còn ${product?.stockQuantity} sản phẩm trong kho!`);
+            setShowErrorToast(true);
+            setTimeout(() => setShowErrorToast(false), 3000);
+        }
+    };
+
+    const handleQuantityChange = (e) => {
+        const val = parseInt(e.target.value);
+        if (isNaN(val) || val < 1) {
+            setQuantity(''); // Allow temporary empty for typing
+            return;
+        }
+        if (val > (product?.stockQuantity || 0)) {
+            setQuantity(product?.stockQuantity || 0);
+            setErrorMessage(`Chỉ còn ${product?.stockQuantity} sản phẩm trong kho!`);
+            setShowErrorToast(true);
+            setTimeout(() => setShowErrorToast(false), 3000);
+        } else {
+            setQuantity(val);
+        }
+    };
+
+    const handleQuantityBlur = () => {
+        if (quantity === '' || quantity < 1) {
+            setQuantity(1);
+        }
     };
 
     // 🔥 2. Hàm xử lý khi nhấn nút "THÊM VÀO GIỎ"
     const handleAddToCart = () => {
-        if (!isLoggedIn()) {
-            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
-            navigate('/login');
-            return;
-        }
-
         // 1. Kéo giỏ hàng hiện tại từ bộ nhớ ra (Nếu chưa có thì tạo mảng rỗng [])
         const currentCart = getCart();
 
@@ -273,12 +295,18 @@ const ProductInfo = ({ product }) => {
                 {/* Số lượng */}
                 <div className="mb-xl">
                     <h3 className="font-label-md text-label-md text-on-surface mb-sm">Số lượng:</h3>
-                    <div className="flex items-center border border-outline-variant rounded-md w-max bg-surface-container-lowest">
-                        <button onClick={handleDecrease} className="px-sm py-xs text-on-surface hover:bg-surface-container transition-colors">-</button>
-                        <span className="px-md py-xs font-label-md text-label-md border-l border-r border-outline-variant w-12 text-center">
-                            {quantity}
-                        </span>
-                        <button onClick={handleIncrease} className="px-sm py-xs text-on-surface hover:bg-surface-container transition-colors">+</button>
+                    <div className="flex items-center border border-outline-variant rounded-md w-max bg-surface-container-lowest overflow-hidden">
+                        <button onClick={handleDecrease} className="px-4 py-2 text-on-surface hover:bg-slate-100 transition-colors border-r border-outline-variant font-bold text-lg">-</button>
+                        <input 
+                            type="number" 
+                            min="1" 
+                            max={product?.stockQuantity || 1}
+                            value={quantity} 
+                            onChange={handleQuantityChange}
+                            onBlur={handleQuantityBlur}
+                            className="w-16 text-center font-label-md text-label-md text-on-surface bg-transparent focus:outline-none focus:ring-0 py-2 border-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <button onClick={handleIncrease} className="px-4 py-2 text-on-surface hover:bg-slate-100 transition-colors border-l border-outline-variant font-bold text-lg">+</button>
                     </div>
                     <p className="text-body-sm text-on-surface-variant mt-2">
                         Kho: {product?.stockQuantity || 0} sản phẩm
@@ -289,12 +317,6 @@ const ProductInfo = ({ product }) => {
                 <div className="flex flex-col sm:flex-row gap-md mb-xl">
                     <button 
                         onClick={() => {
-                            if (!isLoggedIn()) {
-                                alert("Vui lòng đăng nhập để mua hàng!");
-                                navigate('/login');
-                                return;
-                            }
-                            
                             const currentCart = getCart();
                             const existingItemIndex = currentCart.findIndex(item => item.id === product.id);
                             const currentQty = existingItemIndex !== -1 ? currentCart[existingItemIndex].quantity : 0;

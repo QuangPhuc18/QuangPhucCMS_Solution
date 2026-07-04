@@ -101,14 +101,6 @@ const ProductList = () => {
 
     // Thêm sản phẩm vào giỏ hàng
     const handleAddToCart = (product) => {
-        // 1. Kiểm tra đăng nhập
-        if (!isLoggedIn()) {
-            // Có thể dùng toast hoặc custom popup, ở đây tạm thời alert và redirect
-            alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
-            navigate('/login');
-            return;
-        }
-
         const currentCart = getCart();
         const existingItemIndex = currentCart.findIndex(item => item.id === product.id);
 
@@ -353,8 +345,17 @@ const ProductList = () => {
                                             ) : (
                                                 <span className="material-symbols-outlined text-4xl text-slate-300">image</span>
                                             )}
+
+                                            {item.stockQuantity === 0 && (
+                                                <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-20">
+                                                    <div className="bg-red-500 text-white font-bold px-4 py-1.5 rounded-full shadow-md text-sm transform -rotate-12 border-2 border-white">
+                                                        Hết hàng
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* Nút Xem Nhanh giả lập */}
-                                            <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10">
                                                 <div className="bg-white/90 backdrop-blur text-slate-800 text-xs font-bold px-4 py-2 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                                                     Xem chi tiết
                                                 </div>

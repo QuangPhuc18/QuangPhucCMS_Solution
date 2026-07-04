@@ -1,4 +1,4 @@
-﻿@model CMS_DATA.Entities.Post
+@model CMS_DATA.Entities.Post
 
 @{
     Layout = "_LayoutAdmin";
@@ -70,7 +70,11 @@
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script>
         ClassicEditor
-            .create(document.querySelector('#Content'))
+            .create(document.querySelector('#Content'), {
+                ckfinder: {
+                    uploadUrl: '/Upload/CKEditor'
+                }
+            })
             .catch(error => { console.error(error); });
     </script>
 }

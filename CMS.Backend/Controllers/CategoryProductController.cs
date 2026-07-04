@@ -1,4 +1,4 @@
-﻿//SinhVien: Lê Quang Phúc
+//SinhVien: Lê Quang Phúc
 //MSSV: 2123110118
 //Lớp: CCQ2311D
 //Mô tả: Controller Quản lý Danh mục Sản phẩm
@@ -10,6 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using System;
 
 namespace CMS.Backend.Controllers
 {
@@ -18,10 +22,12 @@ namespace CMS.Backend.Controllers
     public class CategoryProductController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public CategoryProductController(ApplicationDbContext context)
+        public CategoryProductController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // ==========================================
@@ -47,10 +53,25 @@ namespace CMS.Backend.Controllers
         [HttpPost]
         [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CategoryProduct model)
+        public async Task<IActionResult> Create(CategoryProduct model, IFormFile? image)
         {
             if (ModelState.IsValid)
             {
+                if (image != null && image.Length > 0)
+                {
+                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                    
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await image.CopyToAsync(fileStream);
+                    }
+                    model.ImageUrl = "/uploads/" + uniqueFileName;
+                }
+
                 _context.CategoriesProducts.Add(model);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -75,7 +96,7 @@ namespace CMS.Backend.Controllers
         [HttpPost]
         [Authorize(Roles = "Administrator")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, CategoryProduct model)
+        public async Task<IActionResult> Edit(int id, CategoryProduct model, IFormFile? image)
         {
             if (id != model.Id) return NotFound();
 
@@ -83,6 +104,38 @@ namespace CMS.Backend.Controllers
             {
                 try
                 {
+                    if (image != null && image.Length > 0)
+                    {
+                        string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
+                        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                        
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                        
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await image.CopyToAsync(fileStream);
+                        }
+                        
+                        // Xóa ảnh cũ nếu có (tùy chọn)
+                        if (!string.IsNullOrEmpty(model.ImageUrl))
+                        {
+                            var oldPath = Path.Combine(_webHostEnvironment.WebRootPath, model.ImageUrl.TrimStart('/'));
+                            if (System.IO.File.Exists(oldPath)) System.IO.File.Exists(oldPath); // Just a safe check
+                        }
+                        
+                        model.ImageUrl = "/uploads/" + uniqueFileName;
+                    }
+                    else
+                    {
+                        // Giữ nguyên ảnh cũ
+                        var existingCategory = await _context.CategoriesProducts.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+                        if (existingCategory != null)
+                        {
+                            model.ImageUrl = existingCategory.ImageUrl;
+                        }
+                    }
+
                     _context.CategoriesProducts.Update(model);
                     await _context.SaveChangesAsync();
                     return RedirectToAction(nameof(Index));

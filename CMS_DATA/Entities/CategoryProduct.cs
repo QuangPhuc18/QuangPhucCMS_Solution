@@ -1,4 +1,4 @@
-﻿//SinhVien: Lê Quang Phúc
+//SinhVien: Lê Quang Phúc
 //MSSV: 2123110118
 //Lớp: CCQ2311D
 //Mô tả: Thực thể Danh mục sản phẩm (E-commerce)
@@ -18,6 +18,8 @@ namespace CMS_DATA.Entities
         public string Name { get; set; } // Tên danh mục sản phẩm
 
         public string? Description { get; set; } // Mô tả danh mục sản phẩm
+
+        public string? ImageUrl { get; set; } // Ảnh đại diện danh mục
 
         // Quan hệ: Một danh mục sản phẩm có nhiều sản phẩm
         public virtual ICollection<Product>? Products { get; set; }

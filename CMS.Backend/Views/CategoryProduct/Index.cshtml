@@ -1,4 +1,4 @@
-﻿@model IEnumerable<CMS_DATA.Entities.CategoryProduct>
+@model IEnumerable<CMS_DATA.Entities.CategoryProduct>
 
 @{
     ViewData["Title"] = "Danh Mục Sản Phẩm";
@@ -22,6 +22,7 @@
                     <thead class="table-light">
                         <tr>
                             <th class="text-center" style="width: 80px;">Mã</th>
+                            <th style="width: 100px;">Ảnh</th>
                             <th>Tên Danh Mục</th>
                             <th>Mô Tả</th>
                             <th class="text-center" style="width: 150px;">Thao Tác</th>
@@ -34,6 +35,18 @@
                             {
                                 <tr>
                                     <td class="text-center fw-bold text-secondary">#@item.Id</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" alt="@item.Name" class="rounded" style="width: 60px; height: 60px; object-fit: contain; background: #f8f9fa;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: #e9ecef; color: #adb5bd;">
+                                                <i class="bi bi-image" style="font-size: 1.5rem;"></i>
+                                            </div>
+                                        }
+                                    </td>
                                     <td class="fw-bold text-dark">@item.Name</td>
                                     <td class="text-muted">@(string.IsNullOrEmpty(item.Description) ? "Không có mô tả" : item.Description)</td>
                                     <td class="text-center">

@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ProductList from './components/ProductList';
+import NewProducts from './components/NewProducts';
+import HotProducts from './components/HotProducts';
 import PostList from './components/PostList';
 import PostDetail from './components/PostDetail'; // 🔥 Import trang chi tiết mới tạo
 import CategoryMenu from './components/CategoryMenu'; // Component danh mục tách rời
@@ -35,8 +37,12 @@ function App() {
                                 {/* Component Danh Mục (CategoryMenu) */}
                                 <CategoryMenu />
 
-                                {/* Danh sách sản phẩm điện máy */}
-                                <ProductList />
+                                {/* Danh sách sản phẩm mới nhất */}
+                                <NewProducts />
+
+                                {/* Danh sách sản phẩm hot/bán chạy */}
+                                <HotProducts />
+                                <ProductList/>
 
                                 {/* Danh sách bài viết tin tức */}
                                 <PostList />

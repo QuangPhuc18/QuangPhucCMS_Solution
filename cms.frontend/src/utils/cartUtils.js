@@ -9,17 +9,16 @@ export const getCurrentUser = () => {
     }
 };
 
-// Tạo khóa Giỏ hàng riêng biệt dựa trên ID của user (VD: "cart_1")
+// Tạo khóa Giỏ hàng. Nếu đã đăng nhập thì lưu theo ID, nếu chưa thì lưu vào giỏ hàng vãng lai (Guest)
 export const getCartKey = () => {
     const user = getCurrentUser();
-    if (!user) return null; // Nếu chưa đăng nhập, không có khóa giỏ hàng
+    if (!user) return 'cart_guest'; // Sử dụng giỏ hàng khách khi chưa đăng nhập
     return `cart_${user.id}`;
 };
 
-// Lấy danh sách sản phẩm trong giỏ hàng CỦA USER ĐÓ
+// Lấy danh sách sản phẩm trong giỏ hàng
 export const getCart = () => {
     const key = getCartKey();
-    if (!key) return [];
     
     const cartStr = localStorage.getItem(key);
     if (!cartStr) return [];

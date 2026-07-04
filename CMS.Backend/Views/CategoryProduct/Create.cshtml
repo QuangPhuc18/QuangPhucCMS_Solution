@@ -1,4 +1,4 @@
-﻿@model CMS_DATA.Entities.CategoryProduct
+@model CMS_DATA.Entities.CategoryProduct
 
 @{
     ViewData["Title"] = "Thêm Danh Mục Mới";
@@ -13,7 +13,7 @@
                     <h5 class="mb-0 text-uppercase fw-bold"><i class="bi bi-tag"></i> Thêm Danh Mục Mới</h5>
                 </div>
                 <div class="card-body p-4">
-                    <form asp-action="Create" method="post">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="All" class="text-danger mb-3 fw-bold"></div>
 
                         <div class="mb-3">
@@ -23,9 +23,15 @@
                         </div>
 
                         <div class="mb-4">
-                            <label asp-for="Description" class="form-label fw-bold">Mô tả chi tiết</label>
-                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Nhập mô tả ngắn cho danh mục này..."></textarea>
-                            <span asp-validation-for="Description" class="text-danger small"></span>
+                            <label asp-for="Description" class="form-label fw-bold">Mô tả (Không bắt buộc)</label>
+                            <textarea asp-for="Description" class="form-control border-success shadow-sm" rows="4" placeholder="Nhập mô tả danh mục..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Ảnh đại diện <span class="text-danger">*</span></label>
+                            <input type="file" name="image" class="form-control border-success shadow-sm" accept="image/*" required />
+                            <small class="text-muted">Chọn ảnh minh họa cho ngành hàng này.</small>
                         </div>
 
                         <hr class="text-muted" />

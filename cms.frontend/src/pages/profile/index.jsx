@@ -112,11 +112,10 @@ const Profile = () => {
     // Helper trạng thái
     const getStatusText = (status) => {
         switch (status) {
-            case 0: return { text: 'Đang xử lý', color: 'bg-amber-100 text-amber-700' };
-            case 1: return { text: 'Đã xác nhận', color: 'bg-blue-100 text-blue-700' };
-            case 2: return { text: 'Đang giao hàng', color: 'bg-purple-100 text-purple-700' };
-            case 3: return { text: 'Hoàn thành', color: 'bg-green-100 text-green-700' };
-            case 4: return { text: 'Đã hủy', color: 'bg-red-100 text-red-700' };
+            case 0: return { text: 'Chờ duyệt', color: 'bg-amber-100 text-amber-700' };
+            case 1: return { text: 'Đang giao hàng', color: 'bg-purple-100 text-purple-700' };
+            case 2: return { text: 'Hoàn thành', color: 'bg-green-100 text-green-700' };
+            case 3: return { text: 'Đã hủy', color: 'bg-red-100 text-red-700' };
             default: return { text: 'Đang xử lý', color: 'bg-slate-100 text-slate-700' };
         }
     };
